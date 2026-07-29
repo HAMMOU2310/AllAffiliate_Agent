@@ -1,0 +1,4 @@
+2026-07-27 18:43:54 | [INFO] | Agent: SYSTEM | Task: Initialization | Status: SUCCESS | Details: System started and agents loaded.
+2026-07-27 18:43:54 | [INFO] | Agent: ProductAgent | Task: fetch_offers | Status: SUCCESS | Details: Payload keys: ['niche']
+2026-07-27 18:43:54 | [INFO] | Agent: AnalyticsAgent | Task: analyze_data | Status: SUCCESS | Details: Payload keys: ['data']
+2026-07-27 18:43:54 | [ERROR] | Agent: ProductAgent | Task: unknown_task | Status: ERROR | Details: Payload keys: []

@@ -1,0 +1,9 @@
+{
+  "project_name": "AllAffiliate_Agent",
+  "version": "1.0.0",
+  "status": "active",
+  "settings": {
+    "debug_mode": true,
+    "max_retries": 3
+  }
+}

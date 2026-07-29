@@ -1,0 +1,8 @@
+ollama
+python-dotenv
+rich
+pydantic
+requests
+psutil
+pillow
+typer

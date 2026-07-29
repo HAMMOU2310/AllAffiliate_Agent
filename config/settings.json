@@ -1,0 +1,26 @@
+{
+    "project_name": "AllAffiliate_Agent",
+    "language": "ar",
+
+    "default_provider": "ollama",
+
+    "default_model": "qwen2.5-coder:1.5b",
+
+    "memory": true,
+
+    "workspace": "workspace",
+
+    "output_folder": "outputs",
+
+    "image_provider": "",
+
+    "video_provider": "",
+
+    "voice_provider": "",
+
+    "browser_provider": "",
+
+    "auto_save": true,
+
+    "theme": "dark"
+}

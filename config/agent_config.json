@@ -1,0 +1,14 @@
+{
+  "agent_name": "CodingAgent",
+  "version": "1.0.0",
+  "capabilities": [
+    "JSON Syntax Validation",
+    "Code Review & Linter Assistance",
+    "Git Repository Management"
+  ],
+  "parameters": {
+    "temperature": 0.1,
+    "max_tokens": 2048,
+    "strict_mode": true
+  }
+}
