@@ -82,21 +82,32 @@ class VideoAgent:
         except (ValueError, TypeError):
             duration = 15
 
+        # هندسة الأوامر الصارمة (System Prompt)
+        system_prompt = """أنت خبير محترف في هندسة أوامر الصور (Prompt Engineering) لإنشاء محتوى فيديو قصير (Reels/Shorts) بمدة 10-15 ثانية.
+مهمتك الوحيدة هي تصميم "شبكات صور متسلسلة" (20-panel sequential image grids) توضح التطور الزمني والتحولات الجوهرية (Chronological & Transformational Evolution).
+يجب أن يتضمن التصميم انتقالات بصرية سريعة جداً (Quick Transitions) وخدع بصرية (Visual Illusions).
+
+تحذير صارم: لا تقم بكتابة أي قصة، أو سرد تعبيري، أو فقرات طويلة. فقط أعطني المخرجات بالهيكل التالي:
+- [عنوان الريلز]
+- [الفكرة العامة]
+- [الصوت/المؤثرات]
+- [أوامر اللوحات 1 إلى 20]: وصف دقيق جداً لكل لوحة (يفضل أن تكون أوامر اللوحات باللغة الإنجليزية لضمان دقة أدوات توليد الصور) مع الحفاظ على ترابط التحول."""
+
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": "أنت مخرج إبداعي. قم بكتابة وصف بصري دقيق (Prompt) جاهز للاستخدام في أدوات الذكاء الاصطناعي لتوليد الفيديو مثل Runway أو Sora."},
-                {"role": "user", "content": f"صمم مشهداً مدته {duration} ثانية بناءً على هذا الوصف: {prompt}"}
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"بناءً على هذا الطلب: '{prompt}'، صمم مشهداً مدته {duration} ثانية مقسماً إلى 20 لوحة متسلسلة."}
             ]
         )
-        
+
         video_prompt = response.choices[0].message.content.strip()
         file_path = "output/video_prompt.txt"
-        
+
         with open(file_path, "w", encoding="utf-8") as f:
             f.write(video_prompt)
-            
-        print(f"[🎬 VideoAgent] ✅ تم حفظ سيناريو الفيديو في: {file_path}")
+
+        print(f"[🎬 VideoAgent] ✅ تم حفظ سيناريو الفيديو في {file_path}")
         return {
             "status": "success",
             "message": f"تم إنشاء سيناريو الفيديو وحفظه في {file_path}",

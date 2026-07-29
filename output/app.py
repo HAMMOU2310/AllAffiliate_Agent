@@ -1,93 +1,108 @@
-class Calculator:
-    def __init__(self):
-        self.history = []
+class Calc:
+    def add(self, x, y):
+        return x + y
 
-    def add(self, num1, num2):
-        result = num1 + num2
-        self.history.append(f"Added {num1} and {num2}, result = {result}")
-        return result
+    def sub(self, x, y):
+        return x - y
 
-    def subtract(self, num1, num2):
-        result = num1 - num2
-        self.history.append(f"Subtracted {num2} from {num1}, result = {result}")
-        return result
+    def mul(self, x, y):
+        return x * y
 
-    def multiply(self, num1, num2):
-        result = num1 * num2
-        self.history.append(f"Multiplied {num1} and {num2}, result = {result}")
-        return result
+    def div(self, x, y):
+        if y == 0:
+            return 'خطأ: لا يمكن القسمه على صفر'
+        else:
+            return x / y
 
-    def divide(self, num1, num2):
-        if num2 == 0:
-            raise ZeroDivisionError("Cannot divide by zero")
-        result = num1 / num2
-        self.history.append(f"Divided {num1} by {num2}, result = {result}")
-        return result
+    def pow(self, x, y):
+        return x ** y
 
-    def power(self, num1, num2):
-        result = num1 ** num2
-        self.history.append(f"{num1} raised to the power of {num2}, result = {result}")
-        return result
+    def sqrt(self, x):
+        if x < 0:
+            return 'خطأ: لا يمكن اخذ الجذر التربيعي لعدد سالب'
+        else:
+            return x ** 0.5
 
-    def sqrt(self, num1):
-        if num1 < 0:
-            raise ValueError("Cannot calculate square root of negative number")
-        result = num1 ** 0.5
-        self.history.append(f"Square root of {num1}, result = {result}")
-        return result
+    def sin(self, x):
+        return __import__('math').sin(x)
 
-    def print_history(self):
-        for entry in self.history:
-            print(entry)
+    def cos(self, x):
+        return __import__('math').cos(x)
+
+    def tan(self, x):
+        return __import__('math').tan(x)
+
+    def log(self, x):
+        if x <= 0:
+            return 'خطأ: لا يمكن اخذ اللوجاريتم لعدد غير موجب'
+        else:
+            return __import__('math').log(x)
 
 
 def main():
-    calculator = Calculator()
-    while True:
-        print("1. Addition")
-        print("2. Subtraction")
-        print("3. Multiplication")
-        print("4. Division")
-        print("5. Power")
-        print("6. Square Root")
-        print("7. Print History")
-        print("8. Exit")
-        choice = input("Choose an operation: ")
-        if choice == "1":
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
-            print(f"Result: {calculator.add(num1, num2)}")
-        elif choice == "2":
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
-            print(f"Result: {calculator.subtract(num1, num2)}")
-        elif choice == "3":
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
-            print(f"Result: {calculator.multiply(num1, num2)}")
-        elif choice == "4":
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
-            try:
-                print(f"Result: {calculator.divide(num1, num2)}")
-            except ZeroDivisionError as e:
-                print(str(e))
-        elif choice == "5":
-            num1 = float(input("Enter base number: "))
-            num2 = float(input("Enter exponent: "))
-            print(f"Result: {calculator.power(num1, num2)}")
-        elif choice == "6":
-            num1 = float(input("Enter number: "))
-            try:
-                print(f"Result: {calculator.sqrt(num1)}")
-            except ValueError as e:
-                print(str(e))
-        elif choice == "7":
-            calculator.print_history()
-        elif choice == "8":
-            break
-        else:
-            print("Invalid choice. Please choose again.")
+    calc = Calc()
 
-if __name__ == "__main__":
+    print('1. إضافة')
+    print('2. طرح')
+    print('3. ضرب')
+    print('4. قسمة')
+    print('5. رفع للقوة')
+    print('6. أخذ الجذر التربيعي')
+    print('7. دالة الساين')
+    print('8. دالة الكوزاين')
+    print('9. دالة التانجنت')
+    print('10. دالة اللوجاريتم')
+
+    choice = input('ادخل رقم الخيار: ')
+
+    if choice == '1':
+        x = float(input('ادخل العدد الأول: '))
+        y = float(input('ادخل العدد الثاني: '))
+        print(calc.add(x, y))
+
+    elif choice == '2':
+        x = float(input('ادخل العدد الأول: '))
+        y = float(input('ادخل العدد الثاني: '))
+        print(calc.sub(x, y))
+
+    elif choice == '3':
+        x = float(input('ادخل العدد الأول: '))
+        y = float(input('ادخل العدد الثاني: '))
+        print(calc.mul(x, y))
+
+    elif choice == '4':
+        x = float(input('ادخل العدد الأول: '))
+        y = float(input('ادخل العدد الثاني: '))
+        print(calc.div(x, y))
+
+    elif choice == '5':
+        x = float(input('ادخل العدد الأول: '))
+        y = float(input('ادخل العدد الثاني: '))
+        print(calc.pow(x, y))
+
+    elif choice == '6':
+        x = float(input('ادخل العدد: '))
+        print(calc.sqrt(x))
+
+    elif choice == '7':
+        x = float(input('ادخل الزاوية بالراديان: '))
+        print(calc.sin(x))
+
+    elif choice == '8':
+        x = float(input('ادخل الزاوية بالراديان: '))
+        print(calc.cos(x))
+
+    elif choice == '9':
+        x = float(input('ادخل الزاوية بالراديان: '))
+        print(calc.tan(x))
+
+    elif choice == '10':
+        x = float(input('ادخل العدد: '))
+        print(calc.log(x))
+
+    else:
+        print('خطأ: الخيار غير متوفر')
+
+
+if __name__ == '__main__':
     main()
