@@ -76,13 +76,11 @@ class VideoAgent:
     def execute(self, prompt, duration=15):
         print(f"\n[🎬 VideoAgent] 🎥 جاري إنشاء سيناريو وأوامر الفيديو (Video Prompt)...")
         
-        # تحويل المدة إلى رقم آمن في حال وصلت كنص
         try:
             duration = int(duration)
         except (ValueError, TypeError):
             duration = 15
 
-        # هندسة الأوامر الصارمة (System Prompt)
         system_prompt = """أنت خبير محترف في هندسة أوامر الصور (Prompt Engineering) لإنشاء محتوى فيديو قصير (Reels/Shorts) بمدة 10-15 ثانية.
 مهمتك الوحيدة هي تصميم "شبكات صور متسلسلة" (20-panel sequential image grids) توضح التطور الزمني والتحولات الجوهرية (Chronological & Transformational Evolution).
 يجب أن يتضمن التصميم انتقالات بصرية سريعة جداً (Quick Transitions) وخدع بصرية (Visual Illusions).
@@ -115,13 +113,52 @@ class VideoAgent:
         }
 
 
+class ImageAgent:
+    def execute(self, **kwargs):
+        print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية...")
+        
+        file_path_in = "output/video_prompt.txt"
+        try:
+            with open(file_path_in, "r", encoding="utf-8") as f:
+                video_script = f.read()
+        except FileNotFoundError:
+            print("[🎨 ImageAgent] ❌ لم يتم العثور على ملف السيناريو!")
+            return {"status": "error", "message": "ملف video_prompt.txt غير موجود."}
+
+        system_prompt = """You are an expert AI Prompt Engineer specialized in image generation tools like Midjourney and DALL-E.
+Your task is to read the provided Arabic video script and convert the 20 panels into 20 highly detailed, professional English text-based prompt instructions.
+Focus strictly on elements of "chronological growth", "sequential evolution", and "rapid visual transformations".
+Ensure lighting, style, and transitions are described explicitly.
+Format the output as a numbered list from 1 to 20. Do NOT output any introductory or concluding text, only the English text prompts."""
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"Convert this 20-panel script into highly detailed English text-based prompt instructions:\n{video_script}"}
+            ]
+        )
+
+        image_prompts = response.choices[0].message.content.strip()
+        file_path_out = "output/image_prompts_en.txt"
+
+        with open(file_path_out, "w", encoding="utf-8") as f:
+            f.write(image_prompts)
+
+        print(f"[🎨 ImageAgent] ✅ تم حفظ أوامر توليد الصور الإنجليزية في {file_path_out}")
+        return {
+            "status": "success",
+            "message": f"تم تجهيز أوامر الصور وحفظها في {file_path_out}",
+            "image_prompts": image_prompts
+        }
+
+
 class GitAgent:
     def execute(self, commit_message="Update generated affiliate assets"):
         print(f"\n[🌿 GitAgent] 📦 جاري رفع التعديلات والملفات إلى GitHub...")
         try:
             subprocess.run(["git", "add", "."], check=True, capture_output=True, text=True, encoding="utf-8", errors="ignore")
             subprocess.run(["git", "commit", "-m", commit_message], check=True, capture_output=True, text=True, encoding="utf-8", errors="ignore")
-            
             subprocess.run(["git", "push", "origin", "HEAD"], check=True, capture_output=True, text=True, encoding="utf-8", errors="ignore")
             
             print("[🌿 GitAgent] ✅ تم الرفع بنجاح إلى المستودع!")
@@ -139,6 +176,7 @@ class MasterAgent:
         self.coding_agent = CodingAgent()
         self.affiliate_agent = AffiliateAgent()
         self.video_agent = VideoAgent()
+        self.image_agent = ImageAgent()
         self.git_agent = GitAgent()
 
     def get_agent_tools(self):
@@ -191,6 +229,17 @@ class MasterAgent:
             {
                 "type": "function",
                 "function": {
+                    "name": "route_to_image_agent",
+                    "description": "استخدم هذا الوكيل لتحويل سيناريو الفيديو العربي إلى أوامر نصية لتوليد صور باللغة الإنجليزية (Image Prompts).",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {}
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
                     "name": "route_to_git_agent",
                     "description": "استخدم هذا الوكيل كخطوة أخيرة دائماً لرفع جميع الملفات المُنشأة حديثاً إلى GitHub.",
                     "parameters": {
@@ -219,7 +268,7 @@ class MasterAgent:
             {"role": "user", "content": user_prompt}
         ]
 
-        max_turns = 7
+        max_turns = 8
         for turn in range(max_turns):
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -238,7 +287,15 @@ class MasterAgent:
 
             for tool_call in message.tool_calls:
                 func_name = tool_call.function.name
-                args = json.loads(tool_call.function.arguments)
+                
+                # المعالجة الآمنة للمعاملات لتجنب NoneType
+                try:
+                    args = json.loads(tool_call.function.arguments) if tool_call.function.arguments else {}
+                except json.JSONDecodeError:
+                    args = {}
+
+                if not isinstance(args, dict):
+                    args = {}
 
                 print(f"\n[Turn {turn + 1}] 🔀 توجيه إلى: {func_name}")
 
@@ -248,6 +305,8 @@ class MasterAgent:
                     result = self.affiliate_agent.execute(**args)
                 elif func_name == "route_to_video_agent":
                     result = self.video_agent.execute(**args)
+                elif func_name == "route_to_image_agent":
+                    result = self.image_agent.execute(**args)
                 elif func_name == "route_to_git_agent":
                     result = self.git_agent.execute(**args)
                 else:
@@ -266,14 +325,13 @@ class MasterAgent:
 if __name__ == "__main__":
     master = MasterAgent()
 
-    # هذا هو الطلب (Prompt) الجديد والمفصل الذي سيختبر كل الوكلاء
-    # ويركز تحديداً على إجبار وكيل الفيديو على استخدام الشبكة المتسلسلة (20-panel) والانتقالات السريعة
     complex_user_prompt = (
         "أريد تطوير نظام آلة حاسبة متقدمة بلغة بايثون، "
         "واكتب إعلاناً تسويقياً ترويجياً لهذه الآلة الحاسبة، "
         "ثم قم بإنشاء سيناريو فيديو ريلز قصير (10 إلى 15 ثانية) يعتمد كلياً على شبكة صور متسلسلة (20-panel grid) "
         "يوضح التطور الزمني لأدوات الحساب؛ بدءاً من العداد الخشبي القديم (Abacus) وصولاً إلى الآلة الحاسبة الذكية المتقدمة، "
         "مع دمج خدع بصرية وانتقالات خاطفة بين اللوحات، "
+        "بعد ذلك قم بتحويل هذا السيناريو إلى أوامر نصية لتوليد الصور باللغة الإنجليزية (Text-based Image Prompts)، "
         "وأخيراً قم برفع كافة الملفات الناتجة إلى مستودع GitHub."
     )
 
