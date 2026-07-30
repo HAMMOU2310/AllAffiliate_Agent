@@ -153,6 +153,40 @@ Format the output as a numbered list from 1 to 20. Do NOT output any introductor
         }
 
 
+class AudioAgent:
+    def execute(self, video_theme, mood="مشرقة ومبهجة"):
+        print(f"\n[🎵 AudioAgent] 🎧 جاري البحث عن اقتراحات لموسيقى خلفية ({mood}) خالية من حقوق الطبع والنشر...")
+
+        system_prompt = """أنت خبير في الإشراف الموسيقي لصناعة المحتوى المرئي.
+مهمتك اقتراح موسيقى خلفية مجانية تماماً وبدون حقوق طبع ونشر (Royalty-Free) تناسب الفيديوهات القصيرة (Reels) بمدة 20 ثانية.
+يجب أن تعطي المخرجات بالتنسيق التالي:
+1. المزاج والإيقاع المطلوب (مثلاً: موسيقى مشرقة، سريعة، متصاعدة تتناسب مع التحول الزمني).
+2. كلمات بحث مفتاحية دقيقة للبحث بها باللغة الإنجليزية (Search Keywords).
+3. روابط لأشهر المواقع التي تقدم هذه الموسيقى مجاناً (مثل Pixabay Music, YouTube Audio Library).
+اجعل الإجابة مختصرة، منظمة، ومباشرة."""
+
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"موضوع الفيديو: {video_theme}. المزاج المطلوب: {mood}."}
+            ]
+        )
+
+        audio_suggestions = response.choices[0].message.content.strip()
+        file_path = "output/audio_suggestions.txt"
+
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(audio_suggestions)
+
+        print(f"[🎵 AudioAgent] ✅ تم حفظ اقتراحات الموسيقى في {file_path}")
+        return {
+            "status": "success",
+            "message": f"تم حفظ اقتراحات الموسيقى في {file_path}",
+            "audio_suggestions": audio_suggestions
+        }
+
+
 class GitAgent:
     def execute(self, commit_message="Update generated affiliate assets"):
         print(f"\n[🌿 GitAgent] 📦 جاري رفع التعديلات والملفات إلى GitHub...")
@@ -177,6 +211,7 @@ class MasterAgent:
         self.affiliate_agent = AffiliateAgent()
         self.video_agent = VideoAgent()
         self.image_agent = ImageAgent()
+        self.audio_agent = AudioAgent()
         self.git_agent = GitAgent()
 
     def get_agent_tools(self):
@@ -240,6 +275,21 @@ class MasterAgent:
             {
                 "type": "function",
                 "function": {
+                    "name": "route_to_audio_agent",
+                    "description": "استخدم هذا الوكيل لاقتراح وجلب مسارات أو كلمات بحث لموسيقى خلفية مجانية وبدون حقوق طبع ونشر تناسب الفيديو.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "video_theme": {"type": "string", "description": "موضوع الفيديو أو فكرته"},
+                            "mood": {"type": "string", "description": "المزاج الموسيقي المطلوب"}
+                        },
+                        "required": ["video_theme"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
                     "name": "route_to_git_agent",
                     "description": "استخدم هذا الوكيل كخطوة أخيرة دائماً لرفع جميع الملفات المُنشأة حديثاً إلى GitHub.",
                     "parameters": {
@@ -268,7 +318,8 @@ class MasterAgent:
             {"role": "user", "content": user_prompt}
         ]
 
-        max_turns = 8
+        # تم رفع max_turns إلى 10 لاستيعاب الوكيل الجديد بأريحية
+        max_turns = 10
         for turn in range(max_turns):
             response = client.chat.completions.create(
                 model="llama-3.3-70b-versatile",
@@ -288,7 +339,6 @@ class MasterAgent:
             for tool_call in message.tool_calls:
                 func_name = tool_call.function.name
                 
-                # المعالجة الآمنة للمعاملات لتجنب NoneType
                 try:
                     args = json.loads(tool_call.function.arguments) if tool_call.function.arguments else {}
                 except json.JSONDecodeError:
@@ -307,6 +357,8 @@ class MasterAgent:
                     result = self.video_agent.execute(**args)
                 elif func_name == "route_to_image_agent":
                     result = self.image_agent.execute(**args)
+                elif func_name == "route_to_audio_agent":
+                    result = self.audio_agent.execute(**args)
                 elif func_name == "route_to_git_agent":
                     result = self.git_agent.execute(**args)
                 else:
@@ -325,6 +377,7 @@ class MasterAgent:
 if __name__ == "__main__":
     master = MasterAgent()
 
+    # تحديث الطلب ليشمل وكيل الصوت الجديد
     complex_user_prompt = (
         "أريد تطوير نظام آلة حاسبة متقدمة بلغة بايثون، "
         "واكتب إعلاناً تسويقياً ترويجياً لهذه الآلة الحاسبة، "
@@ -332,6 +385,7 @@ if __name__ == "__main__":
         "يوضح التطور الزمني لأدوات الحساب؛ بدءاً من العداد الخشبي القديم (Abacus) وصولاً إلى الآلة الحاسبة الذكية المتقدمة، "
         "مع دمج خدع بصرية وانتقالات خاطفة بين اللوحات، "
         "بعد ذلك قم بتحويل هذا السيناريو إلى أوامر نصية لتوليد الصور باللغة الإنجليزية (Text-based Image Prompts)، "
+        "ثم اقترح موسيقى خلفية مشرقة ومجانية تماماً (بدون حقوق طبع ونشر) تتناسب مع هذا التحول الزمني، "
         "وأخيراً قم برفع كافة الملفات الناتجة إلى مستودع GitHub."
     )
 
