@@ -1,24 +1,24 @@
-- [عنوان الريلز]: تطور الحاسوب
-- [الفكرة العامة]: توضيح تطور الحاسوب خلال العصور
-- [الصوت/المؤثرات]: موسيقى إلكترونية سريعة مع صوت تأثيرات تقنية
-- [أوامر اللوحات 1 إلى 20]:
-  1. لوحة خضراء بسيطة مع أرقام romane متفرقة.
-  2. رسمة أبسطية لحساب يدوي على لوح طيني.
-  3. صورة لأباكوس، أداة حساب قديمة.
-  4. رسمة لآلة حساب ميكانيكية قديمة.
-  5. صورة لآلة حاسبة ميكانيكية، مثل باسكالين.
-  6. تأثير انتقال سريع لصورة لأول جهاز كمبيوتر إلكتروني.
-  7. صورة لأول شاشة حاسوب بلوحة مفاتيح.
-  8. لوحة تفاعلية تبدي استخدام الحاسوب PERSONAL.
-  9. صورة لجهاز حاسوب محمول قديم.
-  10. انتقال سريع لصورة لجهاز حاسوب محمول عصري.
-  11. صورة لشاشة حاسوب تعمل بنظام لينكس.
-  12. صورة لجهاز آيفون قديم.
-  13. صورة لآيفون حديث.
-  14. صورة لأنظمة الحوسبة السحابية.
-  15. صورة لأنظمة الذكاء الاصطناعي.
-  16. صورة لروبوتات تعمل بالذكاء الاصطناعي.
-  17. صورة لسيارة ذاتية القيادة.
-  18. صورة لمعسل تقني يُظهر تقنيات الواقع الافتراضي.
-  19. صورة لشاشة حاسوب تعرض شبكة إنترنت.
-  20. صورة لمسبارات المستقبل مع تقنيات متقدمة.
+- [عنوان الريلز]: تطور العداد
+- [الفكرة العامة]: تطور العداد من الخشبي إلى الإلكتروني الحديث
+- [الصوت/المؤثرات]: موسيقى خفيفة مع تأثيرات صوتية للتحولات
+
+- [لوحة 1]: Close-up of a traditional wooden abacus with beads, set against a dark background
+- [لوحة 2]: Zoom out to show the abacus in a vintage setting, with old books and papers around it
+- [لوحة 3]: Blur the edges, focusing on the abacus as it starts to glow softly
+- [لوحة 4]: The abacus begins to transform, wooden parts morphing into metal
+- [لوحة 5]: The metal parts start to take shape as a mechanical calculator
+- [لوحة 6]: Close-up of the calculator's gears and levers moving
+- [لوحة 7]: The mechanical calculator starts to glow with a blue light
+- [لوحة 8]: The calculator's parts begin to dissolve into circuits and wires
+- [لوحة 9]: Electronic components come into view, with LEDs and microchips
+- [لوحة 10]: A computer screen flickers to life, displaying basic calculations
+- [لوحة 11]: The screen shows more complex calculations and graphs
+- [لوحة 12]: The computer morphs into a smartphone, with a touch screen interface
+- [لوحة 13]: The smartphone displays a calculator app, with digital buttons and screens
+- [لوحة 14]: The calculator app transforms into a futuristic AI interface
+- [لوحة 15]: The AI interface shows advanced mathematical operations and data analysis
+- [لوحة 16]: The screen glows with a futuristic light, as calculations happen at high speed
+- [لوحة 17]: The smartphone disappears, leaving only the screen with calculations
+- [لوحة 18]: The screen splits into multiple windows, showing various mathematical operations
+- [لوحة 19]: The windows merge into a single, glowing orb of light
+- [لوحة 20]: The orb dissipates, leaving behind the phrase "Evolution of Calculation" on a black screen

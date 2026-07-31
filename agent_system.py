@@ -3,7 +3,7 @@ import os
 import subprocess
 from dotenv import load_dotenv
 from openai import OpenAI
-import google.generativeai as genai
+from google import genai
 
 # تحميل المتغيرات البيئية من ملف .env
 load_dotenv()
@@ -14,10 +14,7 @@ client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY")
 )
 
-# 2. تهيئة عميل Gemini لوكيل الصور
-genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
-
-# إنشاء مجلد للمخرجات
+# إنشاء مجلد للمخرجات إن لم يكن موجوداً
 os.makedirs("output", exist_ok=True)
 
 
@@ -119,11 +116,11 @@ class VideoAgent:
 
 class ImageAgent:
     def __init__(self):
-        # استخدام الاسم الصحيح والقياسي لنموذج فلاش
-        self.model = genai.GenerativeModel('gemini-1.5-flash')
+        # 2. تهيئة عميل Gemini لوكيل الصور باستخدام المكتبة الجديدة google-genai
+        self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
     def execute(self, **kwargs):
-        print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية باستخدام Gemini...")
+        print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية...")
         
         file_path_in = "output/video_prompt.txt"
         try:
@@ -142,7 +139,11 @@ Format the output as a numbered list from 1 to 20. Do NOT output any introductor
         full_prompt = f"{system_prompt}\n\nArabic Video Script:\n{video_script}"
 
         try:
-            response = self.model.generate_content(full_prompt)
+            # استخدام الطريقة الجديدة (generate_content) من مكتبة google-genai
+            response = self.client.models.generate_content(
+                model='gemini-1.5-flash',
+                contents=full_prompt
+            )
             image_prompts = response.text.strip()
         except Exception as e:
             print(f"[🎨 ImageAgent] ❌ خطأ في الاتصال بـ Gemini: {e}")
@@ -153,7 +154,7 @@ Format the output as a numbered list from 1 to 20. Do NOT output any introductor
         with open(file_path_out, "w", encoding="utf-8") as f:
             f.write(image_prompts)
 
-        print(f"[🎨 ImageAgent] ✅ تم حفظ أوامر توليد الصور الإنجليزية في {file_path_out}")
+        print(f"[🎨 ImageAgent] ✅ تم حفظ أوامر توليد الصور الإنجليزية (أوامر نصية فقط) في {file_path_out}")
         return {
             "status": "success",
             "message": f"تم تجهيز أوامر الصور وحفظها في {file_path_out}",
