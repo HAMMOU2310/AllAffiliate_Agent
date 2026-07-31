@@ -3,15 +3,19 @@ import os
 import subprocess
 from dotenv import load_dotenv
 from openai import OpenAI
+import google.generativeai as genai
 
 # تحميل المتغيرات البيئية من ملف .env
 load_dotenv()
 
-# 1. تهيئة عميل الذكاء الاصطناعي لقراءة المفتاح تلقائياً من .env
+# 1. تهيئة عميل Groq للوكلاء الأساسيين
 client = OpenAI(
     base_url="https://api.groq.com/openai/v1",
     api_key=os.getenv("GROQ_API_KEY")
 )
+
+# 2. تهيئة عميل Gemini لوكيل الصور
+genai.configure(api_key=os.getenv("GEMINI_API_KEY"))
 
 # إنشاء مجلد للمخرجات
 os.makedirs("output", exist_ok=True)
@@ -114,8 +118,12 @@ class VideoAgent:
 
 
 class ImageAgent:
+    def __init__(self):
+        # استخدام نموذج فلاش من Gemini لسرعته ومجانيته
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
+
     def execute(self, **kwargs):
-        print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية...")
+        print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية باستخدام Gemini...")
         
         file_path_in = "output/video_prompt.txt"
         try:
@@ -125,21 +133,21 @@ class ImageAgent:
             print("[🎨 ImageAgent] ❌ لم يتم العثور على ملف السيناريو!")
             return {"status": "error", "message": "ملف video_prompt.txt غير موجود."}
 
-        system_prompt = """You are an expert AI Prompt Engineer specialized in image generation tools like Midjourney and DALL-E.
+        system_prompt = """You are an expert AI Prompt Engineer specialized in image generation tools.
 Your task is to read the provided Arabic video script and convert the 20 panels into 20 highly detailed, professional English text-based prompt instructions.
-Focus strictly on elements of "chronological growth", "sequential evolution", and "rapid visual transformations".
+Focus strictly on elements of chronological growth, sequential evolution, and rapid visual transformations across the grid.
 Ensure lighting, style, and transitions are described explicitly.
 Format the output as a numbered list from 1 to 20. Do NOT output any introductory or concluding text, only the English text prompts."""
 
-        response = client.chat.completions.create(
-            model="llama-3.3-70b-versatile",
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"Convert this 20-panel script into highly detailed English text-based prompt instructions:\n{video_script}"}
-            ]
-        )
+        full_prompt = f"{system_prompt}\n\nArabic Video Script:\n{video_script}"
 
-        image_prompts = response.choices[0].message.content.strip()
+        try:
+            response = self.model.generate_content(full_prompt)
+            image_prompts = response.text.strip()
+        except Exception as e:
+            print(f"[🎨 ImageAgent] ❌ خطأ في الاتصال بـ Gemini: {e}")
+            return {"status": "error", "message": str(e)}
+
         file_path_out = "output/image_prompts_en.txt"
 
         with open(file_path_out, "w", encoding="utf-8") as f:
@@ -318,7 +326,6 @@ class MasterAgent:
             {"role": "user", "content": user_prompt}
         ]
 
-        # تم رفع max_turns إلى 10 لاستيعاب الوكيل الجديد بأريحية
         max_turns = 10
         for turn in range(max_turns):
             response = client.chat.completions.create(
@@ -377,7 +384,6 @@ class MasterAgent:
 if __name__ == "__main__":
     master = MasterAgent()
 
-    # تحديث الطلب ليشمل وكيل الصوت الجديد
     complex_user_prompt = (
         "أريد تطوير نظام آلة حاسبة متقدمة بلغة بايثون، "
         "واكتب إعلاناً تسويقياً ترويجياً لهذه الآلة الحاسبة، "

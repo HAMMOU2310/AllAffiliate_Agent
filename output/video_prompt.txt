@@ -1,24 +1,24 @@
-- [عنوان الريلز]: "تطور الحساب"
-- [الفكرة العامة]: توضح التطور الزمني لأدوات الحساب Starting من العد بالآellijjehad والانتهاء بأجهزة الحاسوب.
-- [الصوت/المؤثرات]: موسيقى خفيفة ومؤثرات صوتية تعبر عن التطور التقني.
+- [Evolution of Calculators]
+- [تطور الحاسبات من العداد إلى الحاسوب الذكي الحديث]
+- [موسيقى إلكترونية وتأثيرات صوتية لمفاتيح الحاسوب]
 - [أوامر اللوحات 1 إلى 20]:
-  1. لوحة فارغة باللون الأبيض.
-  2. يد humanoة ترفع أصبعاً.
-  3. يد humanoة ترفع أصابع كثيرة.
-  4. ظهور حجر رمل للعد.
-  5. الحجر الرمل يتحول إلى سبورة وأقلام رملية.
-  6. سبورة وأقلام رملية مع أعداد كثيرة.
-  7. ظهور عداد أباكوس.
-  8. عداد أباكوس يعمل بسرعة.
-  9. أباكوس يتحول إلى آلة حاسبة механиكية.
-  10. آلة حاسبة механиكية تعمل.
-  11. ظهور حاسوب قديم greatest.
-  12. حاسوب قديم يعمل.
-  13. تحول سريع إلى حاسوب حديث.
-  14. حاسوب حديث يعمل بسرعة.
-  15. ظهور هاتف ذكي.
-  16. هاتف ذكي يعمل بسرعة.
-  17. هاتف ذكي يتحول إلى روبوت.
-  18. روبوت يعمل بشكل автомати.
-  19. روبوت يتحول إلى سحاب حاسوبي.
-  20. سحاب حاسوبي يعمل بسرعة.
+  1. لوحة فارة: "Close-up of an Abacus with beads and wires."
+  2. لوحة فارة: "Abacus with fingers moving the beads to calculate."
+  3. لوحة فارة: "Transition to a mechanical calculator with gears and levers."
+  4. لوحة فارة: "Mechanical calculator with a person turning the handle to perform calculations."
+  5. لوحة فارة: "Early electronic calculator with vacuum tubes and buttons."
+  6. لوحة فارة: "Person pressing buttons on the early electronic calculator."
+  7. لوحة فارة: "Transition to a pocket calculator with an LED display."
+  8. لوحة فارة: "Pocket calculator with a person holding it and pressing buttons."
+  9. لوحة فارة: "Graphing calculator with a color screen and advanced functions."
+  10. لوحة فارة: "Person using the graphing calculator to visualize mathematical functions."
+  11. لوحة فارة: "Transition to a smartphone with a calculator app open."
+  12. لوحة فارة: "Smartphone calculator app with advanced mathematical functions and conversions."
+  13. لوحة فارة: "Tablet with a calculator app and a stylus for handwritten calculations."
+  14. لوحة فارة: "Smartwatch with a built-in calculator and fitness tracking features."
+  15. لوحة فارة: "Virtual reality glasses with a calculator and interactive math lessons."
+  16. لوحة فارة: "Augmented reality calculator overlay on real-world objects."
+  17. لوحة فارة: "Artificial intelligence-powered calculator with predictive input and solutions."
+  18. لوحة فارة: "Robot using a calculator to solve complex mathematical problems."
+  19. لوحة فارة: "Future calculator with a holographic display and voice commands."
+  20. لوحة فارة: "Holographic calculator floating in mid-air with a person interacting with it using gestures."
