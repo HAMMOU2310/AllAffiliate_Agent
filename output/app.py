@@ -1,94 +1,73 @@
-# Define a function for addition
-def add(x, y):
-    return x + y
+class Calculator:
+    def __init__(self):
+        self.history = []
 
-# Define a function for subtraction
-def subtract(x, y):
-    return x - y
+    def add(self, num1, num2):
+        result = num1 + num2
+        self.history.append(f"Added {num1} and {num2}, result = {result}")
+        return result
 
-# Define a function for multiplication
-def multiply(x, y):
-    return x * y
+    def subtract(self, num1, num2):
+        result = num1 - num2
+        self.history.append(f"Subtracted {num2} from {num1}, result = {result}")
+        return result
 
-# Define a function for division
-def divide(x, y):
-    if y == 0:
-        return "Error: Division by zero is not allowed"
-    return x / y
+    def multiply(self, num1, num2):
+        result = num1 * num2
+        self.history.append(f"Multiplied {num1} and {num2}, result = {result}")
+        return result
 
-# Define a function for exponentiation
-def exponent(x, y):
-    return x ** y
+    def divide(self, num1, num2):
+        if num2 == 0:
+            raise ZeroDivisionError("Cannot divide by zero")
+        result = num1 / num2
+        self.history.append(f"Divided {num1} by {num2}, result = {result}")
+        return result
 
-# Define a function for square root
-def sqrt(x):
-    if x < 0:
-        return "Error: Square root of negative number is not a real number"
-    return x ** 0.5
+    def power(self, num1, num2):
+        result = num1 ** num2
+        self.history.append(f"{num1} to the power of {num2}, result = {result}")
+        return result
 
-# Define a function for logarithm
-def log(x):
-    if x <= 0:
-        return "Error: Logarithm of non-positive number is not defined"
-    return x
+    def print_history(self):
+        for entry in self.history:
+            print(entry)
 
-# Define a function for sine
-def sin(x):
-    return x
 
-# Define a function for cosine
-def cos(x):
-    return x
-
-# Define a function for tangent
-def tan(x):
-    return x
-
-# Create a dictionary to store the functions
-functions = {
-    '1': add,
-    '2': subtract,
-    '3': multiply,
-    '4': divide,
-    '5': exponent,
-    '6': sqrt,
-    '7': log,
-    '8': sin,
-    '9': cos,
-    '10': tan,
-}
-
-# Create a main function to handle user input
 def main():
+    calculator = Calculator()
     while True:
-        print("Advanced Calculator")
         print("1. Addition")
         print("2. Subtraction")
         print("3. Multiplication")
         print("4. Division")
-        print("5. Exponentiation")
-        print("6. Square root")
-        print("7. Logarithm")
-        print("8. Sine")
-        print("9. Cosine")
-        print("10. Tangent")
-        print("11. Quit")
-        
-        choice = input("Enter your choice: ")
-        
-        if choice == '11':
+        print("5. Power")
+        print("6. Print History")
+        print("7. Quit")
+        choice = input("Choose an operation: ")
+        if choice in ['1', '2', '3', '4', '5']:
+            num1 = float(input("Enter first number: "))
+            num2 = float(input("Enter second number: "))
+            if choice == '1':
+                print(f"Result: {calculator.add(num1, num2)}")
+            elif choice == '2':
+                print(f"Result: {calculator.subtract(num1, num2)}")
+            elif choice == '3':
+                print(f"Result: {calculator.multiply(num1, num2)}")
+            elif choice == '4':
+                try:
+                    print(f"Result: {calculator.divide(num1, num2)}")
+                except ZeroDivisionError as e:
+                    print(str(e))
+            elif choice == '5':
+                print(f"Result: {calculator.power(num1, num2)}")
+        elif choice == '6':
+            calculator.print_history()
+        elif choice == '7':
             break
-        
-        if choice in functions:
-            if choice in ['6', '7', '8', '9', '10']:
-                num = float(input("Enter a number: "))
-                print(functions[choice](num))
-            else:
-                num1 = float(input("Enter the first number: "))
-                num2 = float(input("Enter the second number: "))
-                print(functions[choice](num1, num2))
         else:
-            print("Invalid choice. Please try again.")
+            print("Invalid choice. Please choose a valid operation.")
 
-# Call the main function
-main()
+
+if __name__ == "__main__":
+    main()

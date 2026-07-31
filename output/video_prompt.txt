@@ -1,24 +1,25 @@
-- [Evolution of Calculators]
-- [تطور الحاسبات من العداد إلى الحاسوب الذكي الحديث]
-- [موسيقى إلكترونية وتأثيرات صوتية لمفاتيح الحاسوب]
-- [أوامر اللوحات 1 إلى 20]:
-  1. لوحة فارة: "Close-up of an Abacus with beads and wires."
-  2. لوحة فارة: "Abacus with fingers moving the beads to calculate."
-  3. لوحة فارة: "Transition to a mechanical calculator with gears and levers."
-  4. لوحة فارة: "Mechanical calculator with a person turning the handle to perform calculations."
-  5. لوحة فارة: "Early electronic calculator with vacuum tubes and buttons."
-  6. لوحة فارة: "Person pressing buttons on the early electronic calculator."
-  7. لوحة فارة: "Transition to a pocket calculator with an LED display."
-  8. لوحة فارة: "Pocket calculator with a person holding it and pressing buttons."
-  9. لوحة فارة: "Graphing calculator with a color screen and advanced functions."
-  10. لوحة فارة: "Person using the graphing calculator to visualize mathematical functions."
-  11. لوحة فارة: "Transition to a smartphone with a calculator app open."
-  12. لوحة فارة: "Smartphone calculator app with advanced mathematical functions and conversions."
-  13. لوحة فارة: "Tablet with a calculator app and a stylus for handwritten calculations."
-  14. لوحة فارة: "Smartwatch with a built-in calculator and fitness tracking features."
-  15. لوحة فارة: "Virtual reality glasses with a calculator and interactive math lessons."
-  16. لوحة فارة: "Augmented reality calculator overlay on real-world objects."
-  17. لوحة فارة: "Artificial intelligence-powered calculator with predictive input and solutions."
-  18. لوحة فارة: "Robot using a calculator to solve complex mathematical problems."
-  19. لوحة فارة: "Future calculator with a holographic display and voice commands."
-  20. لوحة فارة: "Holographic calculator floating in mid-air with a person interacting with it using gestures."
+- **عنوان الريلز**: "تطور أدوات الحساب"
+- **الفكرة العامة**: عرض سريع لتطور أدوات الحساب عبر العصور، من الحساب اليدوي إلى الحواسيب الحديثة.
+- **الصوت/المؤثرات**: موسيقى إلكترونية سريعة مع صوت طقطقة ومؤثرات تقنية لتعزيز الانتقالات.
+
+**أوامر اللوحات 1 إلى 20**:
+1. **لوحة بداية**: صورة قديمة لحساب يدوى على الورق.
+2. **التمييز**: تحول سريع إلى إبرة حاسبة قديمة مع خلفية سوداء.
+3. **الاستخدام**: إبرة حاسبة تقوم بالحسابات بسرعة.
+4. **التحوّل الأول**: تظهر آلة حاسبة ميكانيكية في الخلفية.
+5. **التوسع**: آلة حاسبة ميكانيكية تعمل بسرعة.
+6. **الانتقال**: تحول سريع إلى حاسوب كمبيوتر قديم.
+7. **الاستفادة**: شخص يستخدم الكمبيوتر القديم للحسابات.
+8. **الابتكار**: ظهور حواسيب osobních مع شاشاة LCD.
+9. **التسريع**: حواسيب شخصية تعمل بسرعة فائقة.
+10. **الذكاء الاصطناعي**: ظهور روبوتات تستخدم للحسابات.
+11. **التكامل**: روبوتات تعمل بذكاء اصطناعي لمساعدة الإنسان.
+12. **الشبكة**: إنترنت العالم ي appears بكل زخارفه ورموزه.
+13. **اتصال سريع**: إنترنت سريع يظهر بلمعان أزرق.
+14. **العالم المتصل**: أشخاص حول العالم يستخدمون الإنترنت للحسابات.
+15. **التحسين**: تطبيقات محسّنة على الهواتف الذكية.
+16. **الواقع الافتراضي**: استخدام الواقع الافتراضي في الحسابات.
+17. **الواضح**: شخص ي wears نظارة واقع افتراضي ويحسب بسهولة.
+18. **التراكب**: تحول سريع إلى صور للمستقبل مع حواسيب كمومية.
+19. **الكمومية**: حواسيب كمومية تعمل بسرعات خيالية.
+20. **النهاية**: شعار "تطور الحساب" مع خلفية будущية.
