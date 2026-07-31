@@ -119,8 +119,8 @@ class VideoAgent:
 
 class ImageAgent:
     def __init__(self):
-        # استخدام نموذج مستقر ومتوافق مع توليد النصوص والأوامر
-        self.model = genai.GenerativeModel('gemini-1.5-flash-latest')
+        # استخدام الاسم الصحيح والقياسي لنموذج فلاش
+        self.model = genai.GenerativeModel('gemini-1.5-flash')
 
     def execute(self, **kwargs):
         print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية باستخدام Gemini...")

@@ -26,7 +26,7 @@ class Calculator:
 
     def power(self, num1, num2):
         result = num1 ** num2
-        self.history.append(f"{num1} to the power of {num2}, result = {result}")
+        self.history.append(f"{num1} raised to the power of {num2}, result = {result}")
         return result
 
     def print_history(self):
@@ -41,13 +41,13 @@ def main():
         print("2. Subtraction")
         print("3. Multiplication")
         print("4. Division")
-        print("5. Power")
+        print("5. Exponentiation")
         print("6. Print History")
         print("7. Quit")
         choice = input("Choose an operation: ")
         if choice in ['1', '2', '3', '4', '5']:
-            num1 = float(input("Enter first number: "))
-            num2 = float(input("Enter second number: "))
+            num1 = float(input("Enter the first number: "))
+            num2 = float(input("Enter the second number: "))
             if choice == '1':
                 print(f"Result: {calculator.add(num1, num2)}")
             elif choice == '2':
@@ -66,8 +66,7 @@ def main():
         elif choice == '7':
             break
         else:
-            print("Invalid choice. Please choose a valid operation.")
-
+            print("Invalid choice. Please choose again.")
 
 if __name__ == "__main__":
     main()
