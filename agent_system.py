@@ -1,9 +1,16 @@
-import json
+import json  # <-- هذا هو السطر الذي يحل المشكلة
 import os
+import glob
 import subprocess
+import time
 from dotenv import load_dotenv
 from openai import OpenAI
 from google import genai
+from PIL import Image
+from io import BytesIO
+from moviepy.editor import ImageSequenceClip
+
+# ... باقي الكود كما هو ...
 
 # تحميل المتغيرات البيئية من ملف .env
 load_dotenv()
@@ -14,8 +21,9 @@ client = OpenAI(
     api_key=os.getenv("GROQ_API_KEY")
 )
 
-# إنشاء مجلد للمخرجات إن لم يكن موجوداً
+# إنشاء مجلدات للمخرجات إن لم تكن موجودة
 os.makedirs("output", exist_ok=True)
+os.makedirs("output/images", exist_ok=True)
 
 
 # --- الوكلاء التنفيذيون الحقيقيون ---
@@ -73,30 +81,59 @@ class AffiliateAgent:
         }
 
 
+class PromptExpansionAgent:
+    def execute(self, topic, target_platforms="Midjourney, DALL-E, Social Media"):
+        print(f"\n[📝 PromptExpansionAgent] 💡 جاري إنشاء وتوسيع الأوامر النصية الاحترافية للمنصات...")
+        
+        response = client.chat.completions.create(
+            model="llama-3.3-70b-versatile",
+            messages=[
+                {
+                    "role": "system", 
+                    "content": "أنت خبير محترف في هندسة الأوامر (Prompt Engineering). مهمتك هي تحليل الموضوع وتوليد أوامر نصية (Text Prompts) إبداعية ومفصلة وعالية الجودة لتناسب مختلف المنصات الإبداعية والتسويقية."
+                },
+                {
+                    "role": "user", 
+                    "content": f"الموضوع الأساسي: {topic}. المنصات المستهدفة: {target_platforms}. يرجى تقديم أوامر مفصلة ومنظمة لكل منصة."
+                }
+            ]
+        )
+        
+        expanded_content = response.choices[0].message.content.strip()
+        file_path = "output/expanded_prompts.txt"
+        
+        with open(file_path, "w", encoding="utf-8") as f:
+            f.write(expanded_content)
+            
+        print(f"[📝 PromptExpansionAgent] ✅ تم حفظ الأوامر الموسعة في: {file_path}")
+        return {
+            "status": "success",
+            "message": f"تم حفظ الأوامر الموسعة في {file_path}",
+            "expanded_prompts": expanded_content
+        }
+
+
 class VideoAgent:
-    def execute(self, prompt, duration=15):
+    def execute(self, prompt, duration=20):
         print(f"\n[🎬 VideoAgent] 🎥 جاري إنشاء سيناريو وأوامر الفيديو (Video Prompt)...")
         
         try:
             duration = int(duration)
         except (ValueError, TypeError):
-            duration = 15
+            duration = 20
 
-        system_prompt = """أنت خبير محترف في هندسة أوامر الصور (Prompt Engineering) لإنشاء محتوى فيديو قصير (Reels/Shorts) بمدة 10-15 ثانية.
-مهمتك الوحيدة هي تصميم "شبكات صور متسلسلة" (20-panel sequential image grids) توضح التطور الزمني والتحولات الجوهرية (Chronological & Transformational Evolution).
-يجب أن يتضمن التصميم انتقالات بصرية سريعة جداً (Quick Transitions) وخدع بصرية (Visual Illusions).
-
-تحذير صارم: لا تقم بكتابة أي قصة، أو سرد تعبيري، أو فقرات طويلة. فقط أعطني المخرجات بالهيكل التالي:
+        system_prompt = """أنت خبير محترف في هندسة أوامر الصور لصناعة محتوى فيديو قصير (Reels/Shorts).
+مهمتك تصميم "شبكات صور متسلسلة" (20-panel sequential image grids) توضح التطور الزمني والتحولات الجوهرية.
+أعط المخرجات بالهيكل التالي:
 - [عنوان الريلز]
 - [الفكرة العامة]
-- [الصوت/المؤثرات]
-- [أوامر اللوحات 1 إلى 20]: وصف دقيق جداً لكل لوحة (يفضل أن تكون أوامر اللوحات باللغة الإنجليزية لضمان دقة أدوات توليد الصور) مع الحفاظ على ترابط التحول."""
+- [أوامر اللوحات 1 إلى 20]: وصف دقيق باللغة الإنجليزية لكل لوحة مع الحفاظ على ترابط التحول."""
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
                 {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"بناءً على هذا الطلب: '{prompt}'، صمم مشهداً مدته {duration} ثانية مقسماً إلى 20 لوحة متسلسلة."}
+                {"role": "user", "content": f"صمم مشهداً مدته {duration} ثانية مقسماً إلى 20 لوحة متسلسلة لـ: {prompt}"}
             ]
         )
 
@@ -116,11 +153,10 @@ class VideoAgent:
 
 class ImageAgent:
     def __init__(self):
-        # 2. تهيئة عميل Gemini لوكيل الصور باستخدام المكتبة الجديدة google-genai
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
-    def execute(self, **kwargs):
-        print(f"\n[🎨 ImageAgent] 🖼️ جاري صياغة أوامر نصية تفصيلية لتوليد الصور باللغة الإنجليزية...")
+    def execute(self, *args, **kwargs):
+        print(f"\n[🎨 ImageAgent] 🖼️ جاري توليد الصور فعلياً عبر Google Imagen وحفظها في مجلد المشروع...")
         
         file_path_in = "output/video_prompt.txt"
         try:
@@ -130,55 +166,87 @@ class ImageAgent:
             print("[🎨 ImageAgent] ❌ لم يتم العثور على ملف السيناريو!")
             return {"status": "error", "message": "ملف video_prompt.txt غير موجود."}
 
-        system_prompt = """You are an expert AI Prompt Engineer specialized in image generation tools.
-Your task is to read the provided Arabic video script and convert the 20 panels into 20 highly detailed, professional English text-based prompt instructions.
-Focus strictly on elements of chronological growth, sequential evolution, and rapid visual transformations across the grid.
-Ensure lighting, style, and transitions are described explicitly.
-Format the output as a numbered list from 1 to 20. Do NOT output any introductory or concluding text, only the English text prompts."""
-
-        full_prompt = f"{system_prompt}\n\nArabic Video Script:\n{video_script}"
+        extract_prompt = """Read the provided video script and extract/generate 20 distinct English image generation prompts for a 20-panel sequential grid. Return ONLY the 20 prompts as a numbered list from 1 to 20, with no extra conversational text."""
 
         try:
-            # استخدام الطريقة الجديدة (generate_content) من مكتبة google-genai
             response = self.client.models.generate_content(
                 model='gemini-1.5-flash',
-                contents=full_prompt
+                contents=f"{extract_prompt}\n\nScript:\n{video_script}"
             )
-            image_prompts = response.text.strip()
+            text_output = response.text.strip()
+            
+            prompts = [p.strip() for p in text_output.split('\n') if p.strip()]
+            prompts = [p.lstrip('1234567890.-) ') for p in prompts if any(c.isdigit() for c in p[:3])] or prompts
+            prompts = prompts[:20]
         except Exception as e:
-            print(f"[🎨 ImageAgent] ❌ خطأ في الاتصال بـ Gemini: {e}")
+            print(f"[🎨 ImageAgent] ❌ خطأ في معالجة الأوامر: {e}")
             return {"status": "error", "message": str(e)}
 
-        file_path_out = "output/image_prompts_en.txt"
+        generated_files = []
+        for idx, prompt_text in enumerate(prompts, start=1):
+            clean_prompt = prompt_text.strip()
+            print(f"[🎨 ImageAgent] 🖌️ توليد الصورة رقم {idx}/20...")
+            try:
+                result = self.client.models.generate_images(
+                    model='imagen-3.0-generate-002',
+                    prompt=clean_prompt,
+                    config=dict(
+                        number_of_images=1,
+                        output_mime_type="image/jpeg",
+                        aspect_ratio="9:16"
+                    )
+                )
+                for gen_img in result.generated_images:
+                    img_bytes = gen_img.image.image_bytes
+                    img = Image.open(BytesIO(img_bytes))
+                    file_path = os.path.join("output/images", f"panel_{idx:02d}.jpg")
+                    img.save(file_path)
+                    generated_files.append(file_path)
+            except Exception as img_err:
+                print(f"[🎨 ImageAgent] ⚠️ تعذر توليد الصورة {idx}: {img_err}")
 
-        with open(file_path_out, "w", encoding="utf-8") as f:
-            f.write(image_prompts)
-
-        print(f"[🎨 ImageAgent] ✅ تم حفظ أوامر توليد الصور الإنجليزية (أوامر نصية فقط) في {file_path_out}")
+        print(f"[🎨 ImageAgent] ✅ تم توليد وحفظ {len(generated_files)} صورة في مجلد output/images/")
         return {
             "status": "success",
-            "message": f"تم تجهيز أوامر الصور وحفظها في {file_path_out}",
-            "image_prompts": image_prompts
+            "message": f"تم توليد {len(generated_files)} صورة بنجاح وحفظها في مجلد الصور.",
+            "images_generated": len(generated_files)
         }
+
+
+class VideoComposerAgent:
+    def execute(self, fps=1, output_filename="output/final_reel.mp4"):
+        print(f"\n[🎞️ VideoComposerAgent] 🎬 جاري تجميع الصور وإنتاج الفيديو النهائي...")
+        
+        image_files = sorted(glob.glob("output/images/panel_*.jpg"))
+        
+        if not image_files:
+            print("[🎞️ VideoComposerAgent] ❌ لا توجد صور في مجلد output/images/ لتجميعها!")
+            return {"status": "error", "message": "لم يتم العثور على صور مدمجة."}
+
+        try:
+            clip = ImageSequenceClip(image_files, fps=fps)
+            clip.write_videofile(output_filename, fps=fps, codec="libx264", audio=False)
+            
+            print(f"[🎞️ VideoComposerAgent] ✅ تم إنتاج الفيديو بنجاح في: {output_filename}")
+            return {
+                "status": "success",
+                "message": f"تم تجميع الصور وإنتاج الفيديو في {output_filename}",
+                "video_path": output_filename
+            }
+        except Exception as e:
+            print(f"[🎞️ VideoComposerAgent] ❌ خطأ أثناء تجميع الفيديو: {e}")
+            return {"status": "error", "message": str(e)}
 
 
 class AudioAgent:
     def execute(self, video_theme, mood="مشرقة ومبهجة"):
-        print(f"\n[🎵 AudioAgent] 🎧 جاري البحث عن اقتراحات لموسيقى خلفية ({mood}) خالية من حقوق الطبع والنشر...")
-
-        system_prompt = """أنت خبير في الإشراف الموسيقي لصناعة المحتوى المرئي.
-مهمتك اقتراح موسيقى خلفية مجانية تماماً وبدون حقوق طبع ونشر (Royalty-Free) تناسب الفيديوهات القصيرة (Reels) بمدة 20 ثانية.
-يجب أن تعطي المخرجات بالتنسيق التالي:
-1. المزاج والإيقاع المطلوب (مثلاً: موسيقى مشرقة، سريعة، متصاعدة تتناسب مع التحول الزمني).
-2. كلمات بحث مفتاحية دقيقة للبحث بها باللغة الإنجليزية (Search Keywords).
-3. روابط لأشهر المواقع التي تقدم هذه الموسيقى مجاناً (مثل Pixabay Music, YouTube Audio Library).
-اجعل الإجابة مختصرة، منظمة، ومباشرة."""
+        print(f"\n[🎵 AudioAgent] 🎧 جاري البحث عن اقتراحات لموسيقى خلفية ({mood})...")
 
         response = client.chat.completions.create(
             model="llama-3.3-70b-versatile",
             messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": f"موضوع الفيديو: {video_theme}. المزاج المطلوب: {mood}."}
+                {"role": "system", "content": "أنت خبير إشراف موسيقي. اقترح موسيقى مجانية بدون حقوق طبع ونشر مع كلمات بحث وروابط لمصادر مثل Pixabay."},
+                {"role": "user", "content": f"موضوع الفيديو: {video_theme}. المزاج: {mood}."}
             ]
         )
 
@@ -197,7 +265,7 @@ class AudioAgent:
 
 
 class GitAgent:
-    def execute(self, commit_message="Update generated affiliate assets"):
+    def execute(self, commit_message="Update generated affiliate assets, expanded prompts and video"):
         print(f"\n[🌿 GitAgent] 📦 جاري رفع التعديلات والملفات إلى GitHub...")
         try:
             subprocess.run(["git", "add", "."], check=True, capture_output=True, text=True, encoding="utf-8", errors="ignore")
@@ -218,8 +286,10 @@ class MasterAgent:
     def __init__(self):
         self.coding_agent = CodingAgent()
         self.affiliate_agent = AffiliateAgent()
+        self.prompt_expansion_agent = PromptExpansionAgent()  # 1. تهيئة الوكيل الجديد هنا
         self.video_agent = VideoAgent()
         self.image_agent = ImageAgent()
+        self.video_composer_agent = VideoComposerAgent()
         self.audio_agent = AudioAgent()
         self.git_agent = GitAgent()
 
@@ -229,12 +299,12 @@ class MasterAgent:
                 "type": "function",
                 "function": {
                     "name": "route_to_coding_agent",
-                    "description": "استخدم هذا الوكيل عند الحاجة لكتابة كود برمجي أو تطبيق بايثون.",
+                    "description": "لكتابة كود برمجي أو تطبيق.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "task_description": {"type": "string", "description": "وصف المهمة البرمجية"},
-                            "technologies": {"type": "string", "description": "لغة البرمجة أو التقنية"}
+                            "task_description": {"type": "string"},
+                            "technologies": {"type": "string"}
                         },
                         "required": ["task_description"]
                     }
@@ -244,12 +314,12 @@ class MasterAgent:
                 "type": "function",
                 "function": {
                     "name": "route_to_affiliate_agent",
-                    "description": "استخدم هذا الوكيل لكتابة نص إعلاني أو تسويقي مخصص للتسويق بالعمولة بناءً على منتج أو كود تم إنشاؤه.",
+                    "description": "لكتابة نص إعلاني تسويقي بالعمولة.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "product_description": {"type": "string", "description": "وصف المنتج أو الأداة التسويقية"},
-                            "target_audience": {"type": "string", "description": "الجمهور المستهدف"}
+                            "product_description": {"type": "string"},
+                            "target_audience": {"type": "string"}
                         },
                         "required": ["product_description"]
                     }
@@ -258,13 +328,28 @@ class MasterAgent:
             {
                 "type": "function",
                 "function": {
-                    "name": "route_to_video_agent",
-                    "description": "استخدم هذا الوكيل لإنشاء سيناريو مرئي وأوامر فيديو ترويجية.",
+                    "name": "route_to_prompt_expansion_agent",
+                    "description": "لتوليد وإنشاء الأوامر النصية (Text Prompts) الاحترافية وحفظها في expanded_prompts.txt.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "prompt": {"type": "string", "description": "فكرة الفيديو والوصف البصري"},
-                            "duration": {"type": "string", "description": "المدة بالثواني"}
+                            "topic": {"type": "string"},
+                            "target_platforms": {"type": "string"}
+                        },
+                        "required": ["topic"]
+                    }
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "route_to_video_agent",
+                    "description": "لإنشاء سيناريو فيديو وأوامر شبكة الصور المتسلسلة.",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "prompt": {"type": "string"},
+                            "duration": {"type": "string"}
                         },
                         "required": ["prompt"]
                     }
@@ -274,23 +359,28 @@ class MasterAgent:
                 "type": "function",
                 "function": {
                     "name": "route_to_image_agent",
-                    "description": "استخدم هذا الوكيل لتحويل سيناريو الفيديو العربي إلى أوامر نصية لتوليد صور باللغة الإنجليزية (Image Prompts).",
-                    "parameters": {
-                        "type": "object",
-                        "properties": {}
-                    }
+                    "description": "لتوليد الصور فعلياً برمجياً وحفظها في مجلد المشروع.",
+                    "parameters": {"type": "object", "properties": {}}
+                }
+            },
+            {
+                "type": "function",
+                "function": {
+                    "name": "route_to_video_composer_agent",
+                    "description": "لتجميع الصور المُولدة وإنتاج الفيديو النهائي.",
+                    "parameters": {"type": "object", "properties": {}}
                 }
             },
             {
                 "type": "function",
                 "function": {
                     "name": "route_to_audio_agent",
-                    "description": "استخدم هذا الوكيل لاقتراح وجلب مسارات أو كلمات بحث لموسيقى خلفية مجانية وبدون حقوق طبع ونشر تناسب الفيديو.",
+                    "description": "لاقتراح الموسيقى الخلفية المناسبة.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "video_theme": {"type": "string", "description": "موضوع الفيديو أو فكرته"},
-                            "mood": {"type": "string", "description": "المزاج الموسيقي المطلوب"}
+                            "video_theme": {"type": "string"},
+                            "mood": {"type": "string"}
                         },
                         "required": ["video_theme"]
                     }
@@ -300,11 +390,11 @@ class MasterAgent:
                 "type": "function",
                 "function": {
                     "name": "route_to_git_agent",
-                    "description": "استخدم هذا الوكيل كخطوة أخيرة دائماً لرفع جميع الملفات المُنشأة حديثاً إلى GitHub.",
+                    "description": "لرفع جميع المخرجات إلى GitHub.",
                     "parameters": {
                         "type": "object",
                         "properties": {
-                            "commit_message": {"type": "string", "description": "رسالة الـ Commit"}
+                            "commit_message": {"type": "string"}
                         },
                         "required": ["commit_message"]
                     }
@@ -313,24 +403,31 @@ class MasterAgent:
         ]
 
     def process_request(self, user_prompt):
-        print(f"\n[Master Agent] 🧠 بدء معالجة الطلب...")
+        print(f"\n[Master Agent] 🧠 بدء معالجة الطلب المتسلسل...\n")
         
         messages = [
             {
                 "role": "system", 
                 "content": (
-                    "أنت Master Agent قيادي في نظام متعدد الوكلاء.\n"
-                    "قم بتنفيذ طلب المستخدم عبر استدعاء الوكلاء المناسبين بالتسلسل.\n"
-                    "مرر مخرجات كل وكيل للوكيل الذي يليه إذا كان ذلك مطلوباً، وفي النهاية ارفع العمل عبر Git."
+                    "أنت Master Agent قيادي لنظام متعدد الوكلاء.\n"
+                    "نفذ الطلب عبر استدعاء الوكلاء بالتسلسل الصحيح:\n"
+                    "1. Coding/Affiliate\n"
+                    "2. PromptExpansionAgent (لتوليد الأوامر النصية وحفظها في expanded_prompts.txt)\n"
+                    "3. VideoAgent (السيناريو)\n"
+                    "4. ImageAgent (توليد الصور برمجياً)\n"
+                    "5. VideoComposerAgent (تجميع الفيديو)\n"
+                    "6. AudioAgent (الموسيقى)\n"
+                    "7. GitAgent (الرفع النهائي)"
                 )
             },
             {"role": "user", "content": user_prompt}
         ]
 
-        max_turns = 10
+        max_turns = 14
         for turn in range(max_turns):
+            # استخدام النموذج الحديث والمدعوم حالياً من Groq: llama-3.1-8b-instant
             response = client.chat.completions.create(
-                model="llama-3.3-70b-versatile",
+                model="llama-3.1-8b-instant",
                 messages=messages,
                 tools=self.get_agent_tools(),
                 tool_choice="auto"
@@ -346,25 +443,25 @@ class MasterAgent:
 
             for tool_call in message.tool_calls:
                 func_name = tool_call.function.name
-                
                 try:
                     args = json.loads(tool_call.function.arguments) if tool_call.function.arguments else {}
                 except json.JSONDecodeError:
                     args = {}
 
-                if not isinstance(args, dict):
-                    args = {}
-
-                print(f"\n[Turn {turn + 1}] 🔀 توجيه إلى: {func_name}")
+                print(f"\n[Turn {turn + 1}] 🔀 تشغيل الوكيل: {func_name}")
 
                 if func_name == "route_to_coding_agent":
                     result = self.coding_agent.execute(**args)
                 elif func_name == "route_to_affiliate_agent":
                     result = self.affiliate_agent.execute(**args)
+                elif func_name == "route_to_prompt_expansion_agent":
+                    result = self.prompt_expansion_agent.execute(**args)
                 elif func_name == "route_to_video_agent":
                     result = self.video_agent.execute(**args)
                 elif func_name == "route_to_image_agent":
                     result = self.image_agent.execute(**args)
+                elif func_name == "route_to_video_composer_agent":
+                    result = self.video_composer_agent.execute(**args)
                 elif func_name == "route_to_audio_agent":
                     result = self.audio_agent.execute(**args)
                 elif func_name == "route_to_git_agent":
@@ -372,12 +469,18 @@ class MasterAgent:
                 else:
                     result = {"error": "Unknown tool"}
 
+                # اختصار الرد المسجل في الذاكرة لتجنب تضخم حجم الرسائل والتوكنات
+                clean_result = {"status": result.get("status", "success"), "message": "Task executed successfully."} if isinstance(result, dict) else result
+
                 messages.append({
                     "role": "tool",
                     "tool_call_id": tool_call.id,
                     "name": func_name,
-                    "content": json.dumps(result)
+                    "content": json.dumps(clean_result)
                 })
+
+                # ⏳ فترة انتظار قصيرة لضمان استقرار العمليات المتتالية
+                time.sleep(3)
 
         return {"status": "max_turns_reached"}
 
@@ -387,13 +490,13 @@ if __name__ == "__main__":
 
     complex_user_prompt = (
         "أريد تطوير نظام آلة حاسبة متقدمة بلغة بايثون، "
-        "واكتب إعلاناً تسويقياً ترويجياً لهذه الآلة الحاسبة، "
-        "ثم قم بإنشاء سيناريو فيديو ريلز قصير (10 إلى 15 ثانية) يعتمد كلياً على شبكة صور متسلسلة (20-panel grid) "
-        "يوضح التطور الزمني لأدوات الحساب؛ بدءاً من العداد الخشبي القديم (Abacus) وصولاً إلى الآلة الحاسبة الذكية المتقدمة، "
-        "مع دمج خدع بصرية وانتقالات خاطفة بين اللوحات، "
-        "بعد ذلك قم بتحويل هذا السيناريو إلى أوامر نصية لتوليد الصور باللغة الإنجليزية (Text-based Image Prompts)، "
-        "ثم اقترح موسيقى خلفية مشرقة ومجانية تماماً (بدون حقوق طبع ونشر) تتناسب مع هذا التحول الزمني، "
-        "وأخيراً قم برفع كافة الملفات الناتجة إلى مستودع GitHub."
+        "مع كتابة إعلان تسويقي، "
+        "ثم إنشاء أوامر نصية موسعة ومفصلة لمختلف المنصات وحفظها في expanded_prompts.txt، "
+        "ثم إنشاء سيناريو فيديو ريلز قصير (20 لوحة متسلسلة لطور الحاسبة من الأبكس إلى الحواسيب الذكية)، "
+        "ثم توليد الصور الـ 20 برمجياً وحفظها في مجلد الصور، "
+        "ثم تجميع هذه الصور في ملف فيديو نهائي، "
+        "ثم اقتراح موسيقى خلفية، "
+        "وأخيراً رفع كافة الملفات والنتائج والفيديو إلى مستودع GitHub."
     )
 
     final_result = master.process_request(complex_user_prompt)
