@@ -153,10 +153,11 @@ class VideoAgent:
 
 class ImageAgent:
     def __init__(self):
+        # تهيئة عميل Google لتوليد الصور فقط (Imagen)
         self.client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
 
     def execute(self, *args, **kwargs):
-        print(f"\n[🎨 ImageAgent] 🖼️ جاري توليد الصور فعلياً عبر Google Imagen وحفظها في مجلد المشروع...")
+        print(f"\n[🎨 ImageAgent] 🖼️ جاري توليد الصور فعلياً وحفظها في مجلد المشروع...")
         
         file_path_in = "output/video_prompt.txt"
         try:
@@ -168,25 +169,34 @@ class ImageAgent:
 
         extract_prompt = """Read the provided video script and extract/generate 20 distinct English image generation prompts for a 20-panel sequential grid. Return ONLY the 20 prompts as a numbered list from 1 to 20, with no extra conversational text."""
 
+        # 💡 الحل الجذري: استخدام Groq الموثوق لاستخراج الأوامر لتفادي خطأ 404 الخاص بـ Gemini
         try:
-            response = self.client.models.generate_content(
-                model='gemini-1.5-flash',
-                contents=f"{extract_prompt}\n\nScript:\n{video_script}"
+            response = client.chat.completions.create(
+                model="llama-3.1-8b-instant",
+                messages=[
+                    {"role": "system", "content": extract_prompt},
+                    {"role": "user", "content": f"Script:\n{video_script}"}
+                ]
             )
-            text_output = response.text.strip()
+            text_output = response.choices[0].message.content.strip()
             
+            # استخراج الأوامر وتقسيمها
             prompts = [p.strip() for p in text_output.split('\n') if p.strip()]
             prompts = [p.lstrip('1234567890.-) ') for p in prompts if any(c.isdigit() for c in p[:3])] or prompts
             prompts = prompts[:20]
         except Exception as e:
-            print(f"[🎨 ImageAgent] ❌ خطأ في معالجة الأوامر: {e}")
+            print(f"[🎨 ImageAgent] ❌ خطأ في استخراج الأوامر عبر Groq: {e}")
             return {"status": "error", "message": str(e)}
 
         generated_files = []
         for idx, prompt_text in enumerate(prompts, start=1):
             clean_prompt = prompt_text.strip()
-            print(f"[🎨 ImageAgent] 🖌️ توليد الصورة رقم {idx}/20...")
+            if not clean_prompt:
+                continue
+                
+            print(f"[🎨 ImageAgent] 🖌️ توليد الصورة رقم {idx}/20 عبر Imagen 3...")
             try:
+                # توليد الصورة الفعلية باستخدام نموذج Imagen 3 من Google
                 result = self.client.models.generate_images(
                     model='imagen-3.0-generate-002',
                     prompt=clean_prompt,
@@ -203,12 +213,13 @@ class ImageAgent:
                     img.save(file_path)
                     generated_files.append(file_path)
             except Exception as img_err:
-                print(f"[🎨 ImageAgent] ⚠️ تعذر توليد الصورة {idx}: {img_err}")
+                # هذا الاستثناء يمنع انهيار البرنامج إذا كان مفتاح API لا يدعم توليد الصور
+                print(f"[🎨 ImageAgent] ⚠️ تعذر توليد الصورة {idx} (قد تتطلب الصلاحية مفتاحاً يدعم Imagen): {img_err}")
 
         print(f"[🎨 ImageAgent] ✅ تم توليد وحفظ {len(generated_files)} صورة في مجلد output/images/")
         return {
             "status": "success",
-            "message": f"تم توليد {len(generated_files)} صورة بنجاح وحفظها في مجلد الصور.",
+            "message": f"تم توليد {len(generated_files)} صورة بنجاح وحفظها.",
             "images_generated": len(generated_files)
         }
 
