@@ -1057,3 +1057,118 @@ Approved — Implementation Pending
 ---
 
 # End of Document**
+---
+
+# Cloud AI Foundation Contract
+
+## Version
+
+v0.7
+
+## Status
+
+Approved - Implementation Pending
+
+## Official Path
+
+services/cloud_ai_service.py
+
+## Purpose
+
+Provides a provider-neutral service boundary for cloud AI integration while preserving Core, Agents, Memory, and Plugin boundaries.
+
+## Architecture
+
+`	ext
+Agent
+    ↓
+Core / Routing
+    ↓
+CloudAIService
+    ↓
+CloudAIProvider
+    ↓
+External Cloud AI API
+`
+
+## CloudAIProvider
+
+Public interface:
+
+`python
+generate(prompt: str, model: str | None = None, parameters: dict | None = None) -> Result
+`
+
+Rules:
+
+- Returns Result.
+- Performs provider-specific execution.
+- Does not modify Core, Agents, Memory, or Routing.
+- Keeps provider-specific credentials and API details inside the provider implementation.
+
+## CloudAIService
+
+Public interfaces:
+
+`python
+register_provider(name: str, provider: CloudAIProvider) -> Result
+remove_provider(name: str) -> Result
+list_providers() -> Result
+generate(prompt: str, provider: str | None = None, model: str | None = None, parameters: dict | None = None) -> Result
+`
+
+Rules:
+
+- Provider names must be unique.
+- Providers are registered explicitly.
+- Missing providers return Result.fail(...).
+- Provider execution failures return Result.fail(...).
+- Successful operations return Result.ok(...).
+- All public operations return Result.
+- Provider-specific logic remains outside CloudAIService.
+- CloudAIService is registered through ServiceContainer.
+
+## Request Boundary
+
+`	ext
+prompt
+provider
+model
+parameters
+`
+
+## Return Contract
+
+All public operations return Result. Generation output is returned through Result.data. General execution metadata may be returned through Result.metadata.
+
+## Dependency Rules
+
+`	ext
+Agents
+    ↓
+Core
+    ↓
+Services
+    ↓
+CloudAIProvider
+    ↓
+External Cloud AI API
+`
+
+Forbidden:
+
+`	ext
+Agent -> External Cloud AI API
+Core -> External Cloud AI API
+CloudAIService -> Router
+CloudAIService -> Parser
+CloudAIProvider -> Agent
+`
+
+## Scope Boundary
+
+The contract is provider-neutral. Specific provider implementations, credential storage, secrets management, retries, rate limiting, cost optimization, streaming, tool calling, multimodal generation, browser automation, and video generation are outside this contract until separately approved.
+
+## Contract Status
+
+Approved - Implementation Pending
