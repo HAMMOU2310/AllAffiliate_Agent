@@ -4,9 +4,9 @@
 
 **Project State Document**
 
-**Current Version:** v0.6
+**Current Version:** v0.7
 
-**Development Stage:** Plugin & Capability Foundation
+**Development Stage:** Cloud AI Foundation
 
 **Status:** Active Development
 
@@ -64,11 +64,11 @@ AllAffiliate_Agent
 
 Current Version:
 
-v0.6
+v0.7
 
 Development Status:
 
-Plugin & Capability Foundation
+Cloud AI Foundation
 
 Architecture Status:
 
@@ -104,19 +104,17 @@ Not Started
 
 # 4. Current Objective
 
-الهدف الحالي من v0.6 هو إنشاء **Plugin & Capability Foundation** تسمح بإضافة قدرات مستقبلية بصورة مستقلة دون كسر النواة أو الخدمات الأساسية.
+The current objective of v0.7 is to establish the **Cloud AI Foundation** as an independent, testable, and extensible layer for integrating cloud AI providers.
 
-المتطلبات المستهدفة:
+The foundation must preserve the existing boundaries of:
 
-- Plugin Manager.
-- Plugin lifecycle.
-- تسجيل واكتشاف القدرات.
-- تفعيل وتعطيل Plugins.
-- عزل Plugin عن Core.
-- عقود واضحة وقابلة للاختبار.
-- أساس قابل للتوسع لقدرات Research وAI وMedia وBrowser لاحقًا.
+- Core
+- Agents
+- Services
+- Memory
+- Plugin System
 
-يجب أن تبقى Plugins مستقلة ولا تعدل Core أو الخدمات الأساسية مباشرة.
+The first implementation step is to define the official Public Contract and official path for the Cloud AI Foundation before creating any new Python component.
 
 # 5. Development Progress
 
@@ -275,27 +273,30 @@ Local AI
 
 ## Current Active Component
 
-v0.6 Plugin & Capability Foundation
+v0.7 Cloud AI Foundation
 
 ## Current Objective
 
-إكمال أساس Plugin & Capability Foundation دون تعديل المكونات المستقرة، مع الانتقال بعد إكمال Plugin Lifecycle إلى تعريف وتنفيذ Capability Registration / Discovery، ثم Dynamic Plugin Discovery، وإجراء اختبارات الانحدار النهائية قبل إغلاق v0.6.
+Establish the official Public Contract and architecture boundary for Cloud AI integration without modifying stable Core, Agents, Services, Memory, or Plugin components.
 
-## Current Completed Plugin Scope
+## Current Completed Scope
 
+- v0.6 Plugin & Capability Foundation
 - Plugin Loader
 - Plugin Manager
 - Plugin Registry
-- PluginManager ↔ PluginRegistry integration
-- Plugin integration failure paths
-- Plugin Lifecycle enable/disable
+- Plugin Lifecycle
+- Capability Registration / Discovery
+- Dynamic Plugin Discovery
+- Final v0.6 regression and Definition of Done
 
 ## Current Pending Scope
 
-- Capability Registration / Discovery contract and implementation
-- Dynamic Plugin Discovery contract and implementation
-- Final v0.6 failure-path validation where applicable
-- Final Core + Memory regression after all v0.6 plugin capabilities are integrated
+- Cloud AI Foundation Public Contract
+- Official integration boundary for cloud AI providers
+- First v0.7 implementation component
+- Implementation and direct testing of the first v0.7 component
+- v0.7 integration and regression validation
 
 # 8. Planned Components
 
@@ -321,41 +322,29 @@ Integrated Multi-Agent Production Platform (v1.0)
 
 Current Working Component:
 
-v0.6 Plugin & Capability Foundation
+v0.7 Cloud AI Foundation
 
 Current Working File:
 
-لا يوجد ملف Python قيد التنفيذ حاليًا.
+No Python file has been selected yet.
 
 Current Goal:
 
-تحديد Public Contract والمسار الرسمي لـ Capability Registration / Discovery قبل إنشاء أي ملف جديد.
+Define the official Cloud AI Foundation Public Contract and official path before creating any new Python file.
 
 # 10. Next Files
 
-لا يتم اختيار ملف جديد عشوائيًا.
+No new file is selected arbitrarily.
 
-الخطوة التالية مباشرة:
+The next official sequence is:
 
-1.
-
-تحديد Public Contract والمسار الرسمي لـ Capability Registration / Discovery.
-
-2.
-
-تحديث API_CONTRACTS.md عند اعتماد واجهة عامة جديدة.
-
-3.
-
-كتابة المكوّن المحدد كاملًا واختباره.
-
-4.
-
-تحديث PROJECT_STATE.md بعد الإكمال.
-
-5.
-
-الانتقال إلى Dynamic Plugin Discovery بعد اكتمال Capability Registration / Discovery.
+1. Define the Cloud AI Foundation Public Contract.
+2. Define the official path for the first v0.7 component.
+3. Update API_CONTRACTS.md when the public interface is approved.
+4. Implement the selected component completely.
+5. Test the component immediately.
+6. Update PROJECT_STATE.md at the checkpoint.
+7. Continue to the next v0.7 component.
 
 # 11. Pending Tasks
 
@@ -547,9 +536,11 @@ Current Known Issues
 
 ## Current Work Gate
 
-`v0.6 — Plugin & Capability Foundation`
+`v0.7 - Cloud AI Foundation`
 
-تم إغلاق بوابة v0.5 بعد اجتياز اختبارات التكامل والانحدار ومسارات الفشل وتحديث `docs/CHANGELOG.md`. لا تُضاف قدرات AI أو Media أو Browser أو Computer Automation ضمن v0.6.
+The current project gate is v0.7 Cloud AI Foundation.
+
+No new Python component is to be created before its Public Contract and official path are defined.
 
 ---
 
@@ -557,7 +548,7 @@ Current Known Issues
 
 Current Version
 
-v0.6
+v0.7
 
 Architecture
 
@@ -593,7 +584,7 @@ Not Started
 
 Plugin System
 
-In Development
+Stable
 
 Video System
 
@@ -607,7 +598,7 @@ Not Started
 
 Milestone 1
 
-إنشاء الهيكل الأساسي
+Basic Architecture
 
 Completed
 
@@ -615,7 +606,7 @@ Completed
 
 Milestone 2
 
-إنشاء الخدمات
+Services
 
 Completed
 
@@ -623,7 +614,7 @@ Completed
 
 Milestone 3
 
-تثبيت Core
+Core Stabilization
 
 Completed
 
@@ -631,7 +622,7 @@ Completed
 
 Milestone 4
 
-تثبيت Agents
+Agents
 
 Completed
 
@@ -645,8 +636,6 @@ Completed
 
 ---
 
-Milestone 6
-
 Memory Foundation
 
 Completed
@@ -657,7 +646,7 @@ Milestone 7
 
 Plugin & Capability Foundation
 
-In Progress
+Completed
 
 ---
 
@@ -665,7 +654,7 @@ Milestone 8
 
 Cloud AI Foundation
 
-Pending
+In Progress
 
 ---
 
@@ -695,23 +684,23 @@ Future
 
 Priority 1
 
-تعريف Capability Registration / Discovery contract ومساره الرسمي.
+Define the Cloud AI Foundation Public Contract.
 
 Priority 2
 
-تنفيذ واختبار Capability Registration / Discovery.
+Define the official path and direct dependencies of the first v0.7 component.
 
 Priority 3
 
-تعريف Dynamic Plugin Discovery contract ومساره الرسمي ثم تنفيذه واختباره.
+Implement and test the first v0.7 component.
 
 Priority 4
 
-إجراء Final v0.6 failure-path وCore + Memory regression بعد اكتمال قدرات Plugin المتبقية.
+Run the applicable Cloud AI integration and regression validation.
 
 Priority 5
 
-تحديث PROJECT_STATE.md وCHANGELOG.md عند إغلاق v0.6.
+Update PROJECT_STATE.md and CHANGELOG.md at the appropriate v0.7 checkpoint.
 
 # 20. Session Workflow
 
@@ -813,52 +802,44 @@ Priority 5
 
 Previous Version:
 
-v0.5 — Memory Foundation
+v0.6 - Plugin & Capability Foundation
 
 Status:
 
-Completed and closed after integration, failure-path, and regression validation.
+Completed and closed after integration, failure-path, and final regression validation.
 
 Current Version:
 
-v0.6 — Plugin & Capability Foundation
+v0.7 - Cloud AI Foundation
 
 Status:
 
 Active Development
 
-Completed in v0.6 so far:
+Completed in Previous Version:
 
-✔ Plugin Loader
-✔ Plugin Manager
-✔ Plugin Registry
-✔ PluginManager ↔ PluginRegistry integration
-✔ Plugin integration failure-path tests
-✔ Plugin Lifecycle enable/disable
-✔ Core + Memory regression after Plugin integration
+- Plugin Loader
+- Plugin Manager
+- Plugin Registry
+- Plugin Lifecycle
+- Capability Registration / Discovery
+- Dynamic Plugin Discovery
+- Final v0.6 regression and Definition of Done
 
 Current Next Step:
 
-→ Define Capability Registration / Discovery contract and official path
+-> Define v0.7 Cloud AI Foundation Public Contract and official path
 
 Then:
 
-→ Implement and test Capability Registration / Discovery
+-> Define the first v0.7 component and its direct dependencies
 
 Then:
 
-→ Define, implement, and test Dynamic Plugin Discovery
+-> Implement and test the component
 
 Then:
 
-→ Final v0.6 regression and Definition of Done
-
-Then:
-
-→ Update PROJECT_STATE.md + CHANGELOG.md
-
-Then:
-
-→ v0.7 Cloud AI Foundation
+-> Update PROJECT_STATE.md + CHANGELOG.md at the appropriate checkpoint
 
 # End of PROJECT_STATE.md
