@@ -1,18 +1,22 @@
-# API\_CONTRACTS.md**
+# API_CONTRACTS.md
 
-# AllAffiliate\_Agent**
+# AllAffiliate_Agent
 
-**\*\*API Contracts\*\***
+**API Contracts**
 
-**\*\*Version:\*\*** v0.6
+**Version:** v1.0
 
-**\*\*Status:\*\*** Plugin & Capability Foundation
+**Status:** Synchronized contracts through v1.0 local validation
 
-**\*\*Document Version:\*\*** 1.1
+**Document Version:** 1.0
 
 ---
 
-# Purpose**
+# Purpose
+
+This document preserves the approved public contracts from v0.7 through
+the v1.0 local integration checkpoint. Historical v0.4 wording below is
+not a current roadmap and is superseded by `PROJECT_BLUEPRINT.md`.
 
 يُعد هذا الملف المرجع الرسمي لجميع العقود البرمجية (Contracts) داخل المشروع.
 
@@ -20,24 +24,23 @@
 
 هذا الملف لا يشرح منطق التنفيذ، وإنما يحدد فقط:
 
-\- أسماء الفئات (Classes)
-\- أسماء الدوال (Methods)
-\- المدخلات (Inputs)
-\- المخرجات (Outputs)
-\- العلاقات بين المكونات
-\- حدود المسؤوليات العامة للمكونات
+- أسماء الفئات (Classes)
+- أسماء الدوال (Methods)
+- المدخلات (Inputs)
+- المخرجات (Outputs)
+- العلاقات بين المكونات
 
 ---
 
-# Core Contracts**
+# Core Contracts
 
 ---
 
-## Result**
+## Result
 
 الموقع:
 
-```text
+```
 core/result.py
 ```
 
@@ -54,7 +57,7 @@ Result.fail(...)
 
 الخصائص:
 
-```text
+```python
 success
 message
 data
@@ -65,11 +68,11 @@ timestamp
 
 ---
 
-## Task**
+## Task
 
 الموقع:
 
-```text
+```
 core/task.py
 ```
 
@@ -79,20 +82,19 @@ core/task.py
 
 الخصائص:
 
-```text
-task\_type
+```python
+task_type
 command
-data
 ```
 
 ---
 
-## CommandParser**
+## CommandParser
 
 الموقع:
 
-```text
-core/command\_parser.py
+```
+core/command_parser.py
 ```
 
 المسؤولية:
@@ -109,11 +111,11 @@ parse(command: str) -> Task
 
 ---
 
-## TaskRouter**
+## TaskRouter
 
 الموقع:
 
-```text
+```
 core/router.py
 ```
 
@@ -131,12 +133,12 @@ route(task)
 
 ---
 
-## CommandDispatcher**
+## CommandDispatcher
 
 الموقع:
 
-```text
-core/command\_dispatcher.py
+```
+core/command_dispatcher.py
 ```
 
 المسؤولية:
@@ -153,7 +155,7 @@ dispatch(command: str) -> Result
 
 يعتمد على:
 
-```text
+```
 CodeWriter
 FileTools
 TextEditor
@@ -163,12 +165,12 @@ ProjectManager
 
 ---
 
-## ServiceContainer**
+## ServiceContainer
 
 الموقع:
 
-```text
-core/service\_container.py
+```
+core/service_container.py
 ```
 
 المسؤولية:
@@ -189,16 +191,16 @@ get(name)
 
 ---
 
-# Agent Contracts**
+# Agent Contracts
 
 ---
 
-## BaseAgent**
+## BaseAgent
 
 الموقع:
 
-```text
-core/base\_agent.py
+```
+core/base_agent.py
 ```
 
 المسؤولية:
@@ -213,12 +215,12 @@ execute(task)
 
 ---
 
-## MasterAgent**
+## MasterAgent
 
 الموقع:
 
-```text
-agents/master\_agent.py
+```
+agents/master_agent.py
 ```
 
 المسؤولية:
@@ -229,29 +231,30 @@ agents/master\_agent.py
 
 يتعامل مع:
 
-```text
+```
 CommandParser
+
 TaskRouter
+
 Result
 ```
 
 المسؤوليات:
 
-\- استقبال أوامر المستخدم
-\- إنشاء Task
-\- إرسال المهمة إلى Router
-\- استلام النتيجة
-\- عرض النتيجة
-\- إدارة جلسة التنفيذ
+- استقبال أوامر المستخدم
+- إنشاء Task
+- إرسال المهمة إلى Router
+- استلام النتيجة
+- عرض النتيجة
 
 ---
 
-## CodingAgent**
+## CodingAgent
 
 الموقع:
 
-```text
-agents/coding\_agent.py
+```
+agents/coding_agent.py
 ```
 
 المسؤولية:
@@ -274,120 +277,86 @@ dispatcher.dispatch(task.command)
 
 ---
 
-## MemoryAgent**
+## BrowserAgent
 
 الموقع:
 
-```text
-agents/memory\_agent.py
 ```
-
-المسؤولية:
-
-تنسيق عمليات الذاكرة عبر MemoryManager.
+agents/browser_agent.py
+```
 
 الحالة:
 
-```text
-Implemented
-```
-
-الواجهة:
-
-```python
-execute(task) -> Result
-```
-
-عمليات الذاكرة المدعومة حاليًا:
-
-```text
-save
-get
-get\_entry
-search
-list
-delete
-clear\_session
-count
-health\_check
-```
+Implemented and locally validated
 
 ---
 
-## BrowserAgent**
+## ImageAgent
 
 الموقع:
 
-```text
-agents/browser\_agent.py
+```
+agents/image_agent.py
 ```
 
 الحالة:
 
-```text
 Future
-```
 
 ---
 
-## ImageAgent**
+## VideoAgent
 
 الموقع:
 
-```text
-agents/image\_agent.py
+```
+agents/video_agent.py
 ```
 
 الحالة:
 
-```text
 Future
-```
 
 ---
 
-## VideoAgent**
+## VoiceAgent
 
 الموقع:
 
-```text
-agents/video\_agent.py
+```
+agents/voice_agent.py
 ```
 
 الحالة:
 
-```text
 Future
-```
 
 ---
 
-## VoiceAgent**
+## MemoryAgent
 
 الموقع:
 
-```text
-agents/voice\_agent.py
+```
+agents/memory_agent.py
 ```
 
 الحالة:
 
-```text
-Future
-```
+Implemented and locally validated
 
 ---
 
-# Service Contracts**
+# Service Contracts
 
 ---
 
-## CodeWriter**
+## CodeWriter
 
 الموقع:
 
-```text
-services/code\_writer.py
+```
+services/code_writer.py
 ```
 
 المسؤولية:
@@ -397,49 +366,49 @@ services/code\_writer.py
 الواجهات:
 
 ```python
-create\_file(path, content="")
+create_file(path, content="")
 ```
 
 ```python
-write\_file(path, content)
+write_file(path, content)
 ```
 
 ```python
-append\_file(path, content)
+append_file(path, content)
 ```
 
 ---
 
-## FileTools**
+## FileTools
 
 الموقع:
 
-```text
-services/file\_tools.py
+```
+services/file_tools.py
 ```
 
 الواجهات:
 
 ```python
-read\_file(path)
+read_file(path)
 ```
 
 ```python
-delete\_file(path)
+delete_file(path)
 ```
 
 ```python
-list\_files(path="workspace")
+list_files(path="workspace")
 ```
 
 ---
 
-## TextEditor**
+## TextEditor
 
 الموقع:
 
-```text
-services/text\_editor.py
+```
+services/text_editor.py
 ```
 
 الواجهات:
@@ -454,38 +423,38 @@ append(path, content)
 
 ---
 
-## PythonRunner**
+## PythonRunner
 
 الموقع:
 
-```text
-services/python\_runner.py
+```
+services/python_runner.py
 ```
 
 الواجهة:
 
 ```python
-run\_file(path)
+run_file(path)
 ```
 
 ---
 
-## ProjectManager**
+## ProjectManager
 
 الموقع:
 
-```text
-services/project\_manager.py
+```
+services/project_manager.py
 ```
 
 الواجهات:
 
 ```python
-create\_project(name)
+create_project(name)
 ```
 
 ```python
-list\_projects()
+list_projects()
 ```
 
 ```python
@@ -494,429 +463,350 @@ exists(name)
 
 ---
 
-## MemoryManager**
+
+# Cloud AI Contracts
+
+---
+
+## CloudAIProvider
 
 الموقع:
 
-```text
-memory/memory\_manager.py
+```
+مزود/تنفيذ مستقل خارج نطاق العقد الحالي
 ```
 
 المسؤولية:
 
-تنفيذ منطق تخزين واسترجاع الذاكرة.
-
-الحالة:
-
-```text
-Implemented
-```
-
-الأنواع المدعومة:
-
-```text
-session
-long\_term
-context
-```
-
-الواجهات العامة:
-
-```python
-save(...)
-get(...)
-get\_entry(...)
-search(...)
-list\_memories(...)
-delete(...)
-clear\_session(...)
-count(...)
-health\_check(...)
-```
-
-يتم حقنه عبر:
-
-```text
-ServiceContainer
-    ↓
-TaskRouter
-    ↓
-MemoryAgent
-```
-
----
-
-# Plugin Contracts**
-
-هذه العقود تخص v0.6 فقط، ولا تتجاوز حدود المكونات المنفذة حاليًا.
-
----
-
-## PluginLoader**
-
-الموقع:
-
-```text
-plugins/plugin\_loader.py
-```
-
-المسؤولية:
-
-تحميل Python module واحد من مصدر/مسار ملف محدد.
+واجهة مجردة لمزود Cloud AI. لا يحدد هذا العقد مزودًا سحابيًا بعينه.
 
 الواجهة:
 
 ```python
-PluginLoader.load(source) -> Result
+generate(prompt, model=None, parameters=None) -> Result
 ```
 
-العقد:
+قواعد العقد:
 
-\- يتحقق من صلاحية المصدر قبل التحميل.
-\- عند النجاح يعيد `Result.ok(...)`.
-\- تكون الـmodule المحملة داخل `Result.data`.
-\- يمكن أن يتضمن `Result.metadata` اسم الـmodule.
-\- عند الفشل يعيد `Result.fail(...)`.
-\- لا يرفع Exception غير معالج إلى المستدعي.
-
-الحدود:
-
-\- لا يسجل Plugins.
-\- لا يدير Plugin lifecycle.
-\- لا يفعّل أو يعطّل Plugins.
-\- لا ينفذ Dynamic Discovery على مجموعة Plugins.
-\- لا يعدّل Core.
-\- لا يعدّل Services.
+- `CloudAIProvider` abstraction/interface فقط، وليس تنفيذًا لمزود محدد.
+- تفاصيل الاعتمادات وSecrets وإدارة مفاتيح API خارج نطاق هذا العقد.
+- Retry وStreaming وProvider-specific configuration خارج نطاق هذا العقد.
+- أي تنفيذ لمزود محدد يحتاج عقدًا منفصلًا ومعتمدًا قبل إضافته للمشروع.
 
 ---
 
-## PluginManager**
+## CloudAIService
 
 الموقع:
 
-```text
-plugins/plugin\_manager.py
+```
+services/cloud_ai_service.py
 ```
 
 المسؤولية:
 
-إدارة Plugins التي تم تحميلها صراحةً.
+خدمة موحدة للتعامل مع Cloud AI عبر `CloudAIProvider` abstraction دون ربط العقد بمزود سحابي محدد.
 
-الواجهة:
-
-```python
-PluginManager.load(source) -> Result
-```
+الواجهة العامة:
 
 ```python
-PluginManager.get(name) -> Result
+register_provider(name, provider) -> Result
+get_provider(name) -> Result
+remove_provider(name) -> Result
+list_providers() -> Result
+generate(prompt, provider=None, model=None, parameters=None) -> Result
 ```
 
-```python
-PluginManager.remove(name) -> Result
-```
+قواعد التكامل:
 
-```python
-PluginManager.list() -> Result
-```
-
-العقد:
-
-### load**
-
-\- يستدعي `PluginLoader`.
-\- يسجل الـPlugin المحمّل باسم الـmodule.
-\- يمنع التسجيل المكرر.
-\- يعيد `Result`.
-\- يعيد اسم الـPlugin وعدد الـPlugins في `metadata` عند الحاجة.
-
-### get**
-
-\- يستقبل اسم Plugin صالح.
-\- يعيد الـPlugin المحمّل عبر `Result.ok(...)`.
-\- يعيد `Result.fail(...)` إذا لم يكن مسجلًا أو كان الاسم غير صالح.
-
-### remove**
-
-\- يزيل Plugin مسجلًا من حالة المدير.
-\- يعيد الـPlugin الذي تمت إزالته عبر `Result.ok(...)`.
-\- يفشل إذا كان الاسم غير صالح أو غير مسجل.
-
-### list**
-
-\- يعيد أسماء Plugins المحمّلة حاليًا.
-\- يعيد القائمة مرتبة.
-\- يعيد عدد العناصر في `metadata`.
-
-الحدود:
-
-\- يعتمد على `PluginLoader` لتحميل Plugin واحد.
-\- لا ينفذ Dynamic Discovery المتقدم.
-\- لا يطبق enable/disable lifecycle المتقدم.
-\- لا يعدّل Core.
-\- لا يعدّل Services.
+- تسجل الخدمة داخل `ServiceContainer`.
+- تعتمد الخدمة على `CloudAIProvider` abstraction بدل الاعتماد على Provider محدد.
+- جميع النتائج تعاد كـ `Result`.
+- لا يحدد هذا العقد مزودًا سحابيًا بعينه.
+- Provider-specific credentials, secrets, retry, streaming, transport configuration, and provider SDK details ليست جزءًا من هذا العقد.
 
 ---
 
-# Plugin Extension Boundary
+# v0.7 Cloud AI Scope
 
-الإضافات المستقبلية في v0.6 وما بعده يجب أن تحافظ على الفصل بين:
+الجزء المعتمد من v0.7 في هذا الملف هو `CloudAIProvider` abstraction و`CloudAIService` contract وOpenAI Cloud AI Provider contract.
 
-```text
-PluginLoader
-    ↓
-PluginManager
-    ↓
-Plugin Lifecycle
-    ↓
-Capability Registration / Discovery
-```
+لا يعتمد هذا الملف أي مكوّن Provider-specific آخر مثل Anthropic أو Gemini، ولا يعتمد ملفات credentials أو ai_config كعقود عامة مستقلة.
 
-تم اعتماد `enable` و`disable` ضمن `Advanced Plugin Lifecycle Contract`.
-
-تم اعتماد واجهات Capability Registration / Discovery التالية: `register`, `get`, `list`, `remove`.
-
-أما Dynamic Plugin Discovery فتظل غير معرّفة حتى اعتماد عقدها رسميًا.
+أي مكوّن v0.7 تالٍ يجب أن تكون هويته ومساره ومسؤوليته وواجهته العامة محددة في هذا الملف قبل تنفيذ ملف Python الخاص به.
 
 ---
 
-# Advanced Plugin Lifecycle Contract
+# v0.7 Component #2 — OpenAI Cloud AI Provider
 
-## PluginLifecycle
-
-الموقع:
+## Component Identity
 
 ```text
-plugins/plugin_lifecycle.py
+Component: OpenAI Cloud AI Provider
+Version: v0.7
+Component Number: #2
+Status: Implemented and Tested
 ```
 
-المسؤولية:
-
-إدارة الحالة التشغيلية للـPlugins المسجلة، دون تحميلها أو اكتشافها أو إدارة السجل المركزي.
-
-الواجهات:
-
-```python
-PluginLifecycle.enable(name: str) -> Result
-PluginLifecycle.disable(name: str) -> Result
-```
-
-### enable
-
-- يستقبل اسم Plugin صالح.
-- يفشل إذا كان الـPlugin غير مسجل.
-- يغيّر حالة الـPlugin إلى `enabled`.
-- إذا كان الـPlugin مفعّلًا بالفعل، يعيد `Result.fail(...)`.
-- لا يحمل Plugin جديدًا.
-- لا ينفذ Dynamic Discovery.
-
-### disable
-
-- يستقبل اسم Plugin صالح.
-- يفشل إذا كان الـPlugin غير مسجل.
-- يغيّر حالة الـPlugin إلى `disabled`.
-- إذا كان الـPlugin معطّلًا بالفعل، يعيد `Result.fail(...)`.
-- لا يحذف Plugin من Registry.
-- لا ينفذ Dynamic Discovery.
-
-### Return Contract
-
-جميع العمليات العامة تعيد:
-
-```python
-Result
-```
-
-### الحدود
-
-PluginLifecycle لا يقوم بـ:
-
-- تحميل Python modules.
-- استدعاء `importlib`.
-- تسجيل Plugin في Registry.
-- إزالة Plugin من Registry.
-- Dynamic Plugin Discovery.
-- Capability Registration / Discovery.
-- تنفيذ منطق Core.
-- تنفيذ منطق Services.
-
-حالة العقد:
+## Canonical Path
 
 ```text
-Approved — Implementation Pending
+providers/openai_provider.py
 ```
 
----
+This is the sole approved implementation path for Component #2.
 
+## Responsibility
 
----
+`OpenAIProvider` adapts the OpenAI cloud API to the existing
+`CloudAIProvider` abstraction.
 
-# Capability Registration / Discovery Contract**
+The provider is responsible for:
 
-## CapabilityRegistry**
+- OpenAI-specific API execution.
+- OpenAI-specific SDK usage.
+- Provider-owned credential resolution.
+- Provider-owned request and response translation.
+- Conversion of OpenAI failures into `Result.fail(...)`.
 
-الموقع:
+The provider must not modify Core, Agents, Memory, Routing,
+`CloudAIService`, or `ServiceContainer`.
 
-```text
-plugins/capability_registry.py
-```
-
-المسؤولية:
-
-إدارة تسجيل واكتشاف القدرات التي تعلنها الـPlugins داخل نظام Plugins.
-
-الواجهات:
+## Construction and Configuration Contract
 
 ```python
-CapabilityRegistry.register(
-    plugin_name: str,
-    capability_name: str,
-    capability: object,
+OpenAIProvider() -> OpenAIProvider
+```
+
+The constructor exposes no OpenAI-specific public configuration fields.
+
+Provider-owned configuration includes credentials, OpenAI SDK client
+configuration, and OpenAI-specific API behavior.
+
+OpenAI credentials, SDK objects, endpoints, account identifiers, retry
+settings, transport settings, streaming settings, and tool-calling
+settings must remain inside the provider boundary.
+
+These details must not be added to `CloudAIService`, the generic
+`CloudAIProvider` contract, or the generic `CloudAIService` constructor.
+
+## Public Generation Contract
+
+```python
+generate(
+    prompt: str,
+    model: str | None = None,
+    parameters: dict | None = None,
 ) -> Result
 ```
 
-```python
-CapabilityRegistry.get(
-    capability_name: str,
-) -> Result
-```
+This is the existing generic `CloudAIProvider` contract. Component #2
+must implement it without expanding or changing the generic contract.
+
+## Result Return Contract
+
+Every generation operation returns `Result`.
+
+- Successful output is returned through `Result.data`.
+- Provider-neutral messages may be returned through `Result.message`.
+- Provider-neutral metadata may be returned through `Result.metadata`.
+- Failures are returned through `Result.fail(...)`.
+- Credentials and secrets must not appear in messages, errors, or metadata.
+
+## CloudAIService Relationship
+
+The existing generic `CloudAIService` contract remains unchanged:
 
 ```python
-CapabilityRegistry.list(
-    plugin_name: str | None = None,
-) -> Result
+register_provider(name, provider) -> Result
+get_provider(name) -> Result
+remove_provider(name) -> Result
+list_providers() -> Result
+generate(prompt, provider=None, model=None, parameters=None) -> Result
 ```
 
-```python
-CapabilityRegistry.remove(
-    plugin_name: str,
-    capability_name: str,
-) -> Result
-```
+`CloudAIService` owns:
 
-### register**
+- Provider registration.
+- Provider lookup through `get_provider(name) -> Result`.
+- Provider selection and default-provider behavior.
+- Provider invocation.
+- Provider-neutral `Result` validation and normalization.
 
-- يستقبل اسم Plugin صالحًا.
-- يستقبل اسم Capability صالحًا.
-- يسجل الـCapability تحت الـPlugin المحدد.
-- يرفض التسجيل المكرر لنفس الـPlugin ونفس اسم الـCapability.
-- يعيد `Result.ok(...)` عند النجاح.
-- يعيد `Result.fail(...)` عند فشل التحقق أو وجود تسجيل مكرر.
+`OpenAIProvider` does not register, select, or invoke providers.
 
-### get**
+Completion of the already-approved generic `CloudAIService` contract,
+including `get_provider(name) -> Result`, remains the responsibility of
+`CloudAIService` and is not provider-specific behavior.
 
-- يستقبل اسم Capability صالح.
-- يعيد الـCapability المسجلة عبر `Result.ok(...)`.
-- يعيد `Result.fail(...)` إذا لم تكن Capability مسجلة.
-
-### list**
-
-- بدون `plugin_name`: يعيد جميع الـCapabilities المسجلة.
-- مع `plugin_name`: يعيد Capabilities الخاصة بالـPlugin المحدد.
-- يعيد `Result.ok(...)`.
-- يعيد قائمة مرتبة.
-- لا ينفذ أي Capability.
-
-### remove**
-
-- يستقبل اسم Plugin واسم Capability صالحين.
-- يزيل Capability المسجلة تحت Plugin المحدد.
-- يعيد `Result.ok(...)` عند النجاح.
-- يعيد `Result.fail(...)` إذا لم تكن Capability مسجلة.
-
-### الحدود**
-
-CapabilityRegistry لا يقوم بـ:
-
-- تحميل Python modules.
-- تسجيل أو إزالة Plugins في `PluginRegistry`.
-- إدارة Plugin lifecycle.
-- enable/disable.
-- Dynamic Plugin Discovery.
-- تنفيذ Capability.
-- تنفيذ منطق Core.
-- تنفيذ منطق Services.
-
-### Return Contract**
-
-جميع الواجهات العامة تعيد:
-
-```python
-Result
-```
-
-حالة العقد:
+## Dependency Relationship
 
 ```text
-Approved — Implementation Pending
+CloudAIService
+    ↓
+CloudAIProvider
+    ↓
+OpenAIProvider
+    ↓
+OpenAI SDK / OpenAI Cloud API
 ```
 
----
+Direct provider dependencies are limited to:
 
-# Execution Contract**
+- `Result` from `core.result`.
+- `CloudAIProvider` from `services.cloud_ai_service`.
+- The OpenAI SDK and OpenAI cloud API.
+- A provider-owned credential source.
 
-دورة التنفيذ الرسمية للنواة الحالية:
+The provider must not depend on Agents, Routing, Memory, or provider
+selection logic.
+
+## Failure Behavior
+
+`OpenAIProvider` must return `Result.fail(...)` for missing credentials,
+invalid provider configuration, OpenAI SDK failures, API failures, and
+invalid provider responses.
+
+Unexpected provider failures must not expose secrets.
+
+`CloudAIService` remains responsible for service-level handling of
+provider invocation exceptions, invalid provider return values, provider
+lookup failures, and provider selection failures.
+
+## Required Tests
+
+Component #2 tests cover:
+
+- `OpenAIProvider()` construction.
+- Successful generation returning `Result.ok(...)`.
+- Model forwarding.
+- Parameter forwarding.
+- Invalid prompt behavior.
+- Missing or invalid credential behavior.
+- OpenAI API and SDK failure conversion.
+- Secret redaction from errors and metadata.
+- Registration through `CloudAIService`.
+- Lookup through `CloudAIService.get_provider(...)`.
+- Provider selection and invocation through `CloudAIService`.
+- Compatibility with the unchanged `CloudAIProvider` contract.
+
+The existing Component #2 test file is `workspace/test_openai_provider.py`.
+
+## Scope Boundaries
+
+Component #2 does not include:
+
+- Gemini, Anthropic, or local providers.
+- A provider factory.
+- Changes to `CloudAIProvider`.
+- Provider-specific changes to `CloudAIService`. Completion of the already-
+  approved generic `CloudAIService` contract remains in scope for
+  `CloudAIService` itself.
+- Changes to `ServiceContainer`.
+- Streaming, multimodal, or tool-calling contracts.
+- Rate limiting, cost optimization, or cross-provider failover.
+- Generic credential or configuration files.
+
+## Future Compatibility
+
+Future providers may implement the same generic
+`generate(prompt, model=None, parameters=None) -> Result` contract while
+retaining independent constructors, credentials, SDKs, and request
+translation.
+
+## Approval State
 
 ```text
+v0.7 Component #2: OpenAI Cloud AI Provider
+Contract: Implemented and Tested
+Canonical Path: providers/openai_provider.py
+Implementation: Complete
+Validation: Component #2 tests passed
+```
+
+# Execution Contract
+
+دورة التنفيذ الرسمية:
+
+```
 User
+
 ↓
+
 CommandParser
+
 ↓
+
 Task
+
 ↓
+
 TaskRouter
+
 ↓
+
 Selected Agent
+
 ↓
+
 CommandDispatcher
+
 ↓
+
 Service
+
 ↓
+
 Result
+
 ↓
+
 MasterAgent
+
 ↓
+
 Console
 ```
 
 ---
 
-# Dependency Rules**
+# Dependency Rules
 
 يسمح فقط بالعلاقات التالية:
 
-```text
+```
 Agents
-        ↓
+        ↓
 Core
-        ↓
+        ↓
 Services
-        ↓
+        ↓
 Utilities
 ```
 
 ويمنع:
 
-```text
+```
 Service → Agent
+
 Service → Router
+
 Service → Parser
+
 Agent → Service مباشرة
 ```
 
-ويجب أن تمر عمليات Coding عبر:
+ويجب أن يمر كل شيء عبر:
 
-```text
+```
 CommandDispatcher
 ```
 
-أما Memory وPlugin فلهما حدود طبقية مستقلة وفق عقودهما الخاصة.
-
 ---
 
-# Return Contract**
+# Return Contract
 
-أي عملية عامة داخل المشروع يجب أن تعيد:
+أي عملية داخل المشروع يجب أن تعيد:
 
 ```python
 Result
@@ -924,251 +814,1419 @@ Result
 
 ولا يجوز إعادة:
 
-```text
+```
 dict
+
 list
+
 str
+
 bool
 ```
 
-بشكل مباشر بين طبقات المشروع عندما تكون العملية جزءًا من عقد عام بين الطبقات.
+بشكل مباشر بين الطبقات.
 
 ---
 
-# Extension Contract**
+# Extension Contract
 
 أي Service جديدة يجب تسجيلها داخل:
 
-```text
+```
 ServiceContainer
 ```
 
 وأي Agent جديد يجب تسجيله داخل:
 
-```text
+```
 TaskRouter
 ```
 
 وأي أمر جديد يجب إضافته داخل:
 
-```text
+```
 CommandDispatcher
 ```
 
-وأي Plugin capability جديدة يجب اعتماد عقدها العام في هذا الملف قبل تنفيذها.
+ولا يحتاج Agent إلى أي تعديل.
 
 ---
 
-# Version Compatibility**
+# Version Compatibility
 
 تم اعتماد العقود الأساسية ابتداءً من:
 
-```text
-AllAffiliate\_Agent v0.4
+```
+AllAffiliate_Agent v0.4
 ```
 
-وأضيفت عقود Plugin الحالية في:
+أضيف عقد Cloud AI Foundation في الإصدار:
 
-```text
-AllAffiliate\_Agent v0.6
+```
+AllAffiliate_Agent v0.7
 ```
 
-وأي تغيير في توقيع أي دالة (Method Signature) أو واجهة عامة (Public Interface) يُعد تغييرًا معماريًا، ويجب تحديث هذا الملف أولًا قبل تعديل الكود المتأثر.
+وأي تغيير في توقيع أي دالة (Method Signature) أو واجهة عامة (Public Interface) يُعد تغييرًا معماريًا، ويجب تحديث هذا الملف أولًا قبل تعديل الكود.
 
 ---
 
-# Contract Status**
+## v0.8 Component #1 — Research Engine
+
+### Component Identity
 
 ```text
-Core Contracts
-    Stable
-
-Agent Contracts
-    Stable
-
-Service Contracts
-    Stable
-
-Memory Contracts
-    Implemented
-
-PluginLoader Contract
-    Implemented
-
-PluginManager Contract
-    Implemented
-
-Plugin Registry Contract
-    Approved — Implementation Pending
-
-Advanced Plugin Lifecycle Contract
-    Approved — Implementation Pending
-
-Capability Registration / Discovery Contract
-    Approved — Implementation Pending
-
-Dynamic Plugin Discovery Contract
-    Not Defined
+Component: Research Engine
+Version: v0.8
+Component Number: #1
+Status: Contract Approved
 ```
 
----
-
-# Plugin Registry Contract**
-
-## PluginRegistry**
-
-الموقع:
+### Canonical Path
 
 ```text
-plugins/plugin\_registry.py
+services/research_service.py
 ```
 
-المسؤولية:
+### Responsibility
 
-إدارة السجل المركزي للـPlugins المسجلة داخل النظام.
+`ResearchService` coordinates provider-neutral research sources and
+normalizes their results into evidence records. It may research topics,
+products, websites, markets, and problems when an injected source supports
+the requested scope. It must distinguish observed facts from hypotheses.
 
-الواجهات:
+### Direct Dependencies
+
+- `Result` from `core.result`.
+- Injected research sources implementing the source contract below.
+
+The service must not depend on a cloud provider, browser implementation,
+publishing platform, or external secret.
+
+### Public Construction Contract
 
 ```python
-PluginRegistry.register(name: str, plugin: object) -> Result
-PluginRegistry.get(name: str) -> Result
-PluginRegistry.remove(name: str) -> Result
-PluginRegistry.list() -> Result
+ResearchService(sources=None) -> ResearchService
 ```
 
-### الحدود**
+`sources` is an optional iterable of research sources. An omitted or empty
+source collection is valid and produces a deterministic no-source failure
+when research is requested.
 
-PluginRegistry لا يقوم بـ:
+### Research Source Contract
 
-\- تحميل Python modules.
-\- استدعاء `importlib`.
-\- Dynamic Plugin Discovery.
-\- enable/disable.
-\- إدارة دورة الحياة المتقدمة.
-\- تنفيذ منطق Core.
-\- تنفيذ منطق Services.
+```python
+search(query: str, scope: str | None = None) -> Result
+```
 
-حالة العقد:
+Each source returns a `Result` whose successful `data` is an iterable of
+evidence mappings. Each evidence mapping must contain or be normalized to:
 
 ```text
-Approved — Implementation Pending
+source
+title
+content
+kind
 ```
 
+`kind` is `FACT` for observed evidence. Unsupported or malformed source
+records are rejected rather than silently treated as facts.
+
+### Public Methods
+
+```python
+research(query: str, scope: str | None = None) -> Result
+```
+
+### Result Behavior
+
+Successful research returns `Result.ok(...)` with normalized evidence in
+`data` and metadata containing the query, scope, and source count.
+Provider-neutral messages and metadata must not contain secrets.
+
+### Failure Behavior
+
+The service returns `Result.fail(...)` for invalid queries, invalid scopes,
+missing sources, source failures, malformed source results, and unexpected
+source exceptions. Source failure details are not exposed as proven facts.
+
+### Integration Relationships
+
+`ResearchService` is a Service-layer component. Future ResearchAgent or
+workflow components may call it through the established service/container
+boundaries. It does not perform routing, browser control, publishing,
+analysis, or policy decisions.
+
+### Required Tests
+
+- construction with and without sources
+- successful normalization through a deterministic fake source
+- invalid query and scope behavior
+- no-source and source-failure paths
+- malformed evidence rejection
+- source exception conversion
+- `Result` contract compatibility
+- preservation of FACT classification
+
+### Scope Boundaries
+
+This component does not implement web scraping, browser automation,
+provider selection, reasoning, ranking, product decisions, policy
+compliance, caching, streaming, or external API calls.
+
+### Definition of Done
+
+The component is complete when its implementation, focused tests, and
+applicable regression validation pass, and `PROJECT_STATE.md` records the
+checkpoint without changing the generic Cloud AI contract.
+
 ---
 
-# End of Document**
+## v0.8 Component #2 — Analysis and Reasoning Layer
+
+### Component Identity
+
+```text
+Component: Analysis and Reasoning Layer
+Version: v0.8
+Component Number: #2
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/analysis_service.py
+```
+
+### Responsibility
+
+`AnalysisService` validates and normalizes evidence classifications for
+downstream decisions. It must preserve the distinction between observed
+facts, hypotheses, recommendations, actions, and results. It must never
+present a hypothesis as a proven fact.
+
+### Direct Dependencies
+
+- `Result` from `core.result`.
+- An optional injected reasoning function implementing the analyzer
+  boundary below.
+
+The service must not depend on a specific AI provider, browser, publisher,
+policy authority, or external secret.
+
+### Public Construction Contract
+
+```python
+AnalysisService(analyzer=None) -> AnalysisService
+```
+
+When no analyzer is supplied, the service performs deterministic evidence
+validation and returns the supplied facts without inventing conclusions.
+
+### Analyzer Contract
+
+```python
+analyze(evidence: list[dict], question: str | None = None) -> Result
+```
+
+An analyzer may return a list of classified records. Each record must use
+one of `FACT`, `HYPOTHESIS`, `RECOMMENDATION`, `ACTION`, or `RESULT`.
+
+### Public Methods
+
+```python
+analyze(evidence: list[dict], question: str | None = None) -> Result
+```
+
+### Result Behavior
+
+Successful output returns normalized records in `Result.data`, with
+classification counts in metadata. FACT records remain facts; other
+classifications are never promoted to FACT.
+
+### Failure Behavior
+
+The service returns `Result.fail(...)` for invalid evidence, invalid
+questions, invalid analyzer results, unsupported classifications, analyzer
+failures, and malformed records. Analyzer exception details are not
+exposed.
+
+### Integration Relationships
+
+`AnalysisService` consumes research evidence and may later serve planning,
+product, content, monitoring, and diagnosis workflows. It does not perform
+research, routing, browser control, publishing, or policy decisions.
+
+### Required Tests
+
+- construction with and without an analyzer
+- deterministic fact validation
+- analyzer success and classification preservation
+- invalid evidence and question behavior
+- unsupported classification rejection
+- analyzer failure and exception conversion
+- `Result` contract compatibility
+- proof that hypotheses are not promoted to facts
+
+### Scope Boundaries
+
+This component does not implement an AI provider, religious authority,
+ranking algorithm, policy firewall, workflow planner, or external API call.
+
+### Definition of Done
+
+The component is complete when its implementation, focused tests, and
+applicable regression validation pass, and project state records the
+checkpoint without changing the provider-neutral Cloud AI contract.
+
 ---
 
-# Cloud AI Foundation Contract
+## v0.8 Component #3 — Workflow and Planning Engine
 
-## Version
+### Component Identity
 
-v0.7
+```text
+Component: Workflow and Planning Engine
+Version: v0.8
+Component Number: #3
+Status: Contract Approved
+```
 
-## Status
+### Canonical Path
 
-Approved - Implementation Pending
+```text
+services/workflow_service.py
+```
 
-## Official Path
+### Responsibility
 
-services/cloud_ai_service.py
+`WorkflowService` validates and normalizes plans for a user goal. It
+coordinates an injected planner but does not invent a plan when no planner
+is available. Plans are explicit ordered steps with lifecycle status.
 
-## Purpose
+### Direct Dependencies
 
-Provides a provider-neutral service boundary for cloud AI integration while preserving Core, Agents, Memory, and Plugin boundaries.
+- `Result` from `core.result`.
+- An optional injected planner implementing the planner boundary below.
 
-## Architecture
+The service must not depend on a specific AI provider, browser, publisher,
+or media implementation.
 
-`	ext
-Agent
-    ↓
-Core / Routing
-    ↓
-CloudAIService
-    ↓
-CloudAIProvider
-    ↓
-External Cloud AI API
-`
+### Public Construction Contract
 
-## CloudAIProvider
+```python
+WorkflowService(planner=None) -> WorkflowService
+```
 
-Public interface:
+### Planner Contract
 
-`python
-generate(prompt: str, model: str | None = None, parameters: dict | None = None) -> Result
-`
+```python
+plan(goal: str, context: dict | None = None) -> Result
+```
 
-Rules:
+The planner returns an iterable of step mappings. Every step must contain a
+non-empty `id`, `description`, and `status`. Supported statuses are
+`PENDING`, `READY`, `BLOCKED`, and `COMPLETED`.
 
-- Returns Result.
-- Performs provider-specific execution.
-- Does not modify Core, Agents, Memory, or Routing.
-- Keeps provider-specific credentials and API details inside the provider implementation.
+### Public Methods
 
-## CloudAIService
+```python
+plan(goal: str, context: dict | None = None) -> Result
+```
 
-Public interfaces:
+### Result and Failure Behavior
 
-`python
-register_provider(name: str, provider: CloudAIProvider) -> Result
-remove_provider(name: str) -> Result
-list_providers() -> Result
-generate(prompt: str, provider: str | None = None, model: str | None = None, parameters: dict | None = None) -> Result
-`
+Successful output returns normalized ordered steps in `Result.data` and
+goal/step metadata. The service returns `Result.fail(...)` for invalid
+goals or contexts, missing planners, planner failures, malformed plans,
+duplicate step IDs, and unsupported statuses. Planner exception details are
+not exposed.
 
-Rules:
+### Integration Relationships
 
-- Provider names must be unique.
-- Providers are registered explicitly.
-- Missing providers return Result.fail(...).
-- Provider execution failures return Result.fail(...).
-- Successful operations return Result.ok(...).
-- All public operations return Result.
-- Provider-specific logic remains outside CloudAIService.
-- CloudAIService is registered through ServiceContainer.
+The service consumes analysis output and may later coordinate coding,
+content, media, browser, publishing, monitoring, and diagnosis workflows.
+It does not execute steps itself.
 
-## Request Boundary
+### Required Tests
 
-`	ext
-prompt
-provider
-model
-parameters
-`
+- construction with and without a planner
+- planner success and ordered-step normalization
+- invalid goal/context behavior
+- missing planner and planner failure paths
+- malformed steps, duplicate IDs, and unsupported status rejection
+- planner exception conversion
+- `Result` contract compatibility
 
-## Return Contract
+### Scope Boundaries
 
-All public operations return Result. Generation output is returned through Result.data. General execution metadata may be returned through Result.metadata.
+This component does not execute plans, select providers, call external
+APIs, control browsers, render media, publish assets, or apply fixes.
 
-## Dependency Rules
+### Definition of Done
 
-`	ext
-Agents
-    ↓
-Core
-    ↓
-Services
-    ↓
-CloudAIProvider
-    ↓
-External Cloud AI API
-`
+The component is complete when its implementation, focused tests, and
+Research/Analysis regression validation pass, with project state and
+structure documentation synchronized.
 
-Forbidden:
+---
 
-`	ext
-Agent -> External Cloud AI API
-Core -> External Cloud AI API
-CloudAIService -> Router
-CloudAIService -> Parser
-CloudAIProvider -> Agent
-`
+## v0.8 Component #4 — Content Intelligence
 
-## Scope Boundary
+### Component Identity
 
-The contract is provider-neutral. Specific provider implementations, credential storage, secrets management, retries, rate limiting, cost optimization, streaming, tool calling, multimodal generation, browser automation, and video generation are outside this contract until separately approved.
+```text
+Component: Content Intelligence
+Version: v0.8
+Component Number: #4
+Status: Contract Approved
+```
 
-## Contract Status
+### Canonical Path
 
-Approved - Implementation Pending
+```text
+services/content_service.py
+```
+
+### Responsibility
+
+`ContentService` validates and normalizes structured content drafts from an
+injected generator. It supports a reusable brief, optional persona data,
+format, body, and explicit claims. It does not publish, render media, or
+decide policy compliance.
+
+### Public Construction Contract
+
+```python
+ContentService(generator=None) -> ContentService
+```
+
+### Generator Contract
+
+```python
+generate(
+    brief: str,
+    persona: dict | None = None,
+    format: str | None = None,
+) -> Result
+```
+
+Successful generator data must be a mapping containing non-empty `title`,
+`body`, and `claims` (a list). Claims remain explicit data for later policy
+review; they are not treated as approved statements.
+
+### Public Methods
+
+```python
+create(brief: str, persona: dict | None = None, format: str | None = None) -> Result
+```
+
+### Result and Failure Behavior
+
+Successful output returns a normalized draft mapping and metadata for the
+requested format. The service returns `Result.fail(...)` for invalid briefs,
+personas, formats, missing generators, generator failures, exceptions, and
+malformed drafts. Generator exception details are not exposed.
+
+### Integration Relationships
+
+Content Intelligence consumes research, analysis, planning, and optional
+persona data. It produces drafts for later policy, media, publishing, and
+monitoring workflows. It does not invoke Cloud AI directly.
+
+### Required Tests
+
+- construction with and without a generator
+- successful draft normalization
+- invalid brief/persona/format behavior
+- missing generator and generator failure paths
+- malformed draft and claims rejection
+- exception conversion and secret redaction
+- `Result` contract compatibility
+
+### Scope Boundaries
+
+This component does not implement policy decisions, religious authority,
+video rendering, image generation, publishing adapters, or platform APIs.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.8 prior-component
+regression, compilation, and synchronized documentation all pass.
+
+---
+
+## v0.8 Component #5 — Digital Asset Registry
+
+### Component Identity
+
+```text
+Component: Digital Asset Registry
+Version: v0.8
+Component Number: #5
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/digital_asset_service.py
+```
+
+### Responsibility
+
+`DigitalAssetService` stores and retrieves reusable digital asset records.
+Supported asset types include website, landing page, product, affiliate
+link, video, channel, campaign, social account, and content asset.
+
+### Public Construction Contract
+
+```python
+DigitalAssetService() -> DigitalAssetService
+```
+
+Each instance owns an isolated registry.
+
+### Public Methods
+
+```python
+register(asset_type: str, name: str, metadata: dict | None = None) -> Result
+get(asset_id: str) -> Result
+list_assets(asset_type: str | None = None) -> Result
+```
+
+Registered records contain a generated stable `id`, normalized `type` and
+`name`, and a metadata mapping. Metadata must not contain secrets.
+
+### Result and Failure Behavior
+
+All methods return `Result`. Invalid types, names, IDs, metadata, duplicate
+IDs, and missing assets return `Result.fail(...)`. Listing an empty registry
+is a successful result with an empty list.
+
+### Integration Relationships
+
+The registry is consumed by future content, affiliate, publishing,
+monitoring, diagnosis, and experiment workflows. It does not monitor,
+publish, or mutate external platforms.
+
+### Required Tests
+
+- construction and isolated registry state
+- registration and normalized records
+- lookup and list behavior
+- type/name/metadata validation
+- missing asset and filter behavior
+- `Result` contract compatibility
+
+### Scope Boundaries
+
+This component does not implement persistence, platform APIs, monitoring,
+metrics, diagnosis, publishing, affiliate ranking, or secret storage.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.8 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.8 Component #6 — Product and Affiliate Intelligence
+
+### Component Identity
+
+```text
+Component: Product and Affiliate Intelligence
+Version: v0.8
+Component Number: #6
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/product_service.py
+```
+
+### Responsibility
+
+`ProductService` ranks supplied product candidates using multiple numeric
+signals. It records the signals used and never treats a single sales metric
+as sufficient evidence. It does not discover products or publish content.
+
+### Public Construction Contract
+
+```python
+ProductService() -> ProductService
+```
+
+### Public Methods
+
+```python
+rank(candidates: list[dict]) -> Result
+```
+
+Each candidate must contain a non-empty `id`, `name`, and `signals` mapping.
+The signals mapping must contain at least two numeric finite values. Scores
+are the arithmetic mean of the supplied signal values and are not claimed
+to be business truth.
+
+### Result and Failure Behavior
+
+Success returns candidates ordered by descending score, retaining normalized
+signals and adding `score` and `signals_used`. Invalid candidates,
+duplicate IDs, non-numeric signals, and insufficient signals return
+`Result.fail(...)`.
+
+### Integration Relationships
+
+The service consumes research and analysis outputs and may feed content,
+policy, affiliate identity, publishing, and monitoring workflows. It does
+not call external platforms or decide policy compliance.
+
+### Required Tests
+
+- construction and multi-signal ranking
+- descending score and signal provenance
+- invalid candidates and duplicate IDs
+- insufficient/non-numeric signals
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not discover products, assert authoritative suitability,
+embed affiliate links, publish content, or use a single metric as truth.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.8 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.8 Component #7 — Policy and Shariah Compliance Firewall
+
+### Component Identity
+
+```text
+Component: Policy and Shariah Compliance Firewall
+Version: v0.8
+Component Number: #7
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/policy_service.py
+```
+
+### Responsibility
+
+`PolicyService` isolates policy decisions from providers and content
+generation. It represents `ALLOWED`, `BLOCKED`, and `REVIEW_REQUIRED`
+outcomes and never claims that an AI model is an authoritative religious
+authority.
+
+### Public Construction Contract
+
+```python
+PolicyService(evaluator=None) -> PolicyService
+```
+
+### Evaluator Contract
+
+```python
+evaluate(asset: dict) -> Result
+```
+
+An evaluator returns a mapping with a decision and reasons. The decision
+must be one of `ALLOWED`, `BLOCKED`, or `REVIEW_REQUIRED`; reasons must be a
+list of strings.
+
+### Public Methods
+
+```python
+evaluate(asset: dict) -> Result
+```
+
+### Result and Failure Behavior
+
+Successful evaluation returns the normalized decision and reasons. Missing
+evaluators, invalid assets, invalid decisions, malformed reasons, and
+evaluator failures return `Result.fail(...)`. A blocked decision is a
+successful policy result but must never be silently treated as publishable.
+
+### Integration Relationships
+
+Content, product, affiliate, and publishing workflows consume this
+boundary. Provider code is not allowed to own policy decisions.
+
+### Required Tests
+
+- construction with and without evaluator
+- ALLOWED, BLOCKED, and REVIEW_REQUIRED outcomes
+- invalid asset and malformed evaluator output
+- evaluator failure and exception conversion
+- explicit blocked behavior and Result compatibility
+
+### Scope Boundaries
+
+This component does not provide religious authority, generate content,
+publish assets, call external APIs, or silently approve blocked content.
+
+### Definition of Done
+
+The component is complete when all three decision states and failure paths
+pass focused tests, v0.8 regression passes, and documentation is
+synchronized.
+
+---
+
+## v0.8 Component #8 — Content Persona
+
+### Component Identity
+
+```text
+Component: Content Persona
+Version: v0.8
+Component Number: #8
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/persona_service.py
+```
+
+### Responsibility
+
+`PersonaService` validates reusable content persona profiles. A profile may
+represent audience, language, tone, storytelling style, narration style,
+visual identity, marketing style, CTA behavior, platform constraints, and
+prohibited claims.
+
+### Public Construction Contract
+
+```python
+PersonaService() -> PersonaService
+```
+
+### Public Methods
+
+```python
+validate(persona: dict) -> Result
+```
+
+The returned profile is normalized and remains reusable; no channel identity
+is hard-coded into another service.
+
+### Result and Failure Behavior
+
+All methods return `Result`. Invalid profiles, missing required fields, and
+invalid field types return `Result.fail(...)`. Prohibited claims remain
+data and are not silently removed.
+
+### Integration Relationships
+
+Content Intelligence and future publishing workflows may consume the
+profile. The service does not generate, publish, or enforce policy.
+
+### Required Tests
+
+- construction and valid reusable profile
+- required-field and type validation
+- prohibited-claim preservation
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not own content generation, policy decisions, platform
+adapters, or a single channel's identity.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.8 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.8 Component #9 — Affiliate Identity and Tracking Abstraction
+
+### Component Identity
+
+```text
+Component: Affiliate Identity and Tracking abstraction
+Version: v0.8
+Component Number: #9
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/affiliate_identity_service.py
+```
+
+### Responsibility
+
+`AffiliateIdentityService` stores reusable affiliate identity and tracking
+configuration. It keeps identity separate from content, products, and
+platform adapters and never stores secrets.
+
+### Public Construction Contract
+
+```python
+AffiliateIdentityService() -> AffiliateIdentityService
+```
+
+### Public Methods
+
+```python
+create(network: str, account: str, campaign: str | None = None,
+       parameters: dict | None = None) -> Result
+get(identity_id: str) -> Result
+```
+
+Records contain a generated stable ID, normalized network/account/campaign,
+and tracking parameters. Secret-like parameter keys are rejected.
+
+### Result and Failure Behavior
+
+All methods return `Result`. Invalid fields, protected parameters, and
+missing identities return `Result.fail(...)`. Identity creation has no
+external side effects.
+
+### Integration Relationships
+
+Content, product, publishing, and monitoring workflows may reference an
+identity by ID. Platform-specific link construction remains outside this
+component.
+
+### Required Tests
+
+- construction and reusable identity creation
+- lookup and normalization
+- optional campaign/parameters
+- invalid fields and secret protection
+- missing identity and `Result` compatibility
+
+### Scope Boundaries
+
+This component does not call affiliate networks, publish links, store
+credentials, or hard-code a platform.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.8 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.9 Component #1 — Temporal Video Production Engine
+
+### Component Identity
+
+```text
+Component: Temporal Video Production Engine
+Version: v0.9
+Component Number: #1
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/video_production_service.py
+```
+
+### Responsibility
+
+`VideoProductionService` validates a temporal production plan. A plan must
+represent timeline, stages, scenes, motion, camera, audio, continuity, and
+validation data. It must not reduce temporal evolution to a collection of
+still images.
+
+### Public Construction Contract
+
+```python
+VideoProductionService(interpreter=None) -> VideoProductionService
+```
+
+### Interpreter Contract
+
+```python
+interpret(instruction: str) -> Result
+```
+
+The interpreter returns a mapping containing a non-empty `timeline` list.
+Each stage contains an `id`, `duration`, and `scenes` list. Each scene
+contains `id`, `motion`, `camera`, `audio`, and `continuity` mappings.
+
+### Public Methods
+
+```python
+create_plan(instruction: str) -> Result
+```
+
+### Result and Failure Behavior
+
+Successful output returns a normalized temporal plan and metadata with
+stage/scene counts. Missing interpreters, invalid instructions, malformed
+timelines, missing motion/camera/audio/continuity data, and interpreter
+failures return `Result.fail(...)`. No renderer or external API is called.
+
+### Integration Relationships
+
+The plan may later feed separate audio, media, rendering, and quality
+validation components. Optional image assets remain supporting inputs, not
+the production architecture.
+
+### Required Tests
+
+- construction and missing interpreter behavior
+- successful temporal plan normalization
+- invalid instruction and malformed timeline behavior
+- missing stage/scene continuity fields
+- interpreter failure and exception conversion
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not render video, generate images, call media APIs,
+produce audio, control browsers, or publish content.
+
+### Definition of Done
+
+The component is complete when its focused tests, v0.9 regression,
+compilation, and synchronized documentation pass.
+
+---
+
+## v0.9 Component #2 — Audio Engine
+
+### Component Identity
+
+```text
+Component: Audio Engine
+Version: v0.9
+Component Number: #2
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/audio_service.py
+```
+
+### Responsibility
+
+`AudioService` validates a separable audio plan for a production workflow.
+An audio plan contains ordered tracks with timing, type, and continuity
+references. It does not render audio or own video production logic.
+
+### Public Construction Contract
+
+```python
+AudioService(interpreter=None) -> AudioService
+```
+
+### Interpreter Contract
+
+```python
+interpret(instruction: str) -> Result
+```
+
+The interpreter returns a mapping with a non-empty `tracks` list. Each track
+contains `id`, `start`, `duration`, `kind`, and `continuity`.
+
+### Public Methods
+
+```python
+create_plan(instruction: str) -> Result
+```
+
+### Result and Failure Behavior
+
+Successful output returns normalized ordered tracks. Missing interpreters,
+invalid instructions, malformed tracks, invalid timing, duplicate IDs, and
+interpreter failures return `Result.fail(...)` without exposing exception
+details.
+
+### Integration Relationships
+
+Audio plans may be consumed by the temporal video engine, media pipeline,
+and quality validation components through explicit plan data. Audio remains
+separate from video and image capabilities.
+
+### Required Tests
+
+- construction and missing interpreter behavior
+- successful track normalization
+- invalid instruction/timing and malformed track behavior
+- duplicate ID rejection
+- interpreter failure and exception conversion
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not render audio, call external media APIs, generate
+video, or implement image generation.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.9 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.9 Component #3 — Media Pipeline
+
+### Component Identity
+
+```text
+Component: Media Pipeline
+Version: v0.9
+Component Number: #3
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/media_pipeline_service.py
+```
+
+### Responsibility
+
+`MediaPipelineService` validates composition inputs from temporal video and
+audio plans and returns a provider-neutral composition manifest. It does
+not render media or call external APIs.
+
+### Public Construction Contract
+
+```python
+MediaPipelineService() -> MediaPipelineService
+```
+
+### Public Methods
+
+```python
+compose(video_plan: dict, audio_plan: dict) -> Result
+```
+
+Both plans must contain non-empty lists for `timeline` and `tracks`,
+respectively. The returned manifest preserves both plans and records the
+composition stage as `VALIDATED`.
+
+### Result and Failure Behavior
+
+Invalid plans, missing lists, and malformed inputs return `Result.fail(...)`.
+Successful composition is a manifest validation result, not a rendered
+file.
+
+### Integration Relationships
+
+The pipeline consumes Video Production and Audio Engine plans and may later
+feed rendering and quality validation components. It remains separate from
+browser, publishing, and provider boundaries.
+
+### Required Tests
+
+- construction and valid composition manifest
+- invalid/missing video and audio plan behavior
+- preservation of temporal and audio data
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not render, encode, publish, call media providers, or
+replace the temporal video architecture with still-image composition.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.9 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.9 Component #4 — Publishing Gateway
+
+### Component Identity
+
+```text
+Component: Publishing Gateway
+Version: v0.9
+Component Number: #4
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/publishing_service.py
+```
+
+### Responsibility
+
+`PublishingService` routes publish requests through an injected platform
+adapter. It fails closed for assets with a `BLOCKED` policy decision and
+does not hard-code a social platform.
+
+### Public Construction Contract
+
+```python
+PublishingService(adapter=None) -> PublishingService
+```
+
+### Adapter Contract
+
+```python
+publish(asset: dict, destination: str) -> Result
+```
+
+### Public Methods
+
+```python
+publish(asset: dict, destination: str) -> Result
+```
+
+### Result and Failure Behavior
+
+Invalid assets/destinations, blocked policy decisions, missing adapters,
+adapter failures, and adapter exceptions return `Result.fail(...)`.
+Successful adapter results are normalized with destination metadata.
+
+### Required Tests
+
+- construction and adapter success
+- blocked fail-closed behavior
+- invalid inputs and missing adapter
+- adapter failure and exception conversion
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not implement a platform, hold credentials, create
+content, or bypass policy decisions.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.9 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.9 Component #5 — Performance Monitoring
+
+### Component Identity
+
+```text
+Component: Performance Monitoring
+Version: v0.9
+Component Number: #5
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/performance_monitoring_service.py
+```
+
+### Responsibility
+
+`PerformanceMonitoringService` records observations for registered digital
+assets. It preserves the relationship between asset identity, timestamped
+metrics, and evidence. It does not diagnose causes or mutate external
+platforms.
+
+### Public Construction Contract
+
+```python
+PerformanceMonitoringService() -> PerformanceMonitoringService
+```
+
+### Public Methods
+
+```python
+record(asset_id: str, metrics: dict[str, int | float]) -> Result
+list_observations(asset_id: str | None = None) -> Result
+```
+
+Metrics must be numeric finite values. Each observation receives a stable
+observation ID and UTC timestamp.
+
+### Result and Failure Behavior
+
+Invalid asset IDs, invalid metrics, non-numeric/non-finite values, and invalid
+filters return `Result.fail(...)`. Listing with no observations succeeds with
+an empty list. Observations are copied on input and output.
+
+### Integration Relationships
+
+The service consumes digital asset identities and later feeds anomaly
+detection, diagnosis, experiments, and reporting. It does not infer
+hypotheses or claim causal explanations.
+
+### Required Tests
+
+- construction and isolated observation state
+- recording numeric metrics
+- listing and asset filtering
+- invalid IDs and metrics
+- non-finite value rejection
+- `Result` compatibility
+
+### Scope Boundaries
+
+This component does not scrape platforms, diagnose causes, publish fixes,
+call external APIs, or store credentials.
+
+### Definition of Done
+
+The component is complete when focused tests, v0.9 regression, compilation,
+and synchronized documentation pass.
+
+---
+
+## v0.9 Component #6 — Diagnosis Engine
+
+### Component Identity
+
+```text
+Component: Diagnosis Engine
+Version: v0.9
+Component Number: #6
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/diagnosis_service.py
+```
+
+### Responsibility
+
+`DiagnosisService` organizes asset observations into evidence-backed
+diagnoses. It preserves FACT, HYPOTHESIS, and RECOMMENDATION distinctions
+and never presents a hypothesis as a proven cause.
+
+### Public Construction Contract
+
+```python
+DiagnosisService(analyzer=None) -> DiagnosisService
+```
+
+### Public Methods
+
+```python
+diagnose(asset_id: str, observations: list[dict]) -> Result
+```
+
+The optional analyzer may return hypothesis/recommendation records. Without
+one, the service returns validated observation facts and no invented cause.
+
+### Result and Failure Behavior
+
+Invalid asset IDs/observations, malformed analyzer output, analyzer failure,
+and exceptions return `Result.fail(...)`. Successful output contains
+classified records and metadata identifying the asset.
+
+### Required Tests
+
+- deterministic fact-only diagnosis
+- analyzer classification preservation
+- invalid observations
+- analyzer failure and exception conversion
+- no hypothesis promotion to FACT
+
+### Scope Boundaries
+
+This component does not apply fixes, publish changes, call external APIs,
+or claim causal certainty without evidence.
+
+### Definition of Done
+
+Focused tests, v0.9 regression, compilation, and synchronized
+documentation pass.
+
+---
+
+## v0.9 Component #7 — Experiment and Optimization Engine
+
+### Component Identity
+
+```text
+Component: Experiment and Optimization Engine
+Version: v0.9
+Component Number: #7
+Status: Contract Approved
+```
+
+### Canonical Path
+
+```text
+services/experiment_service.py
+```
+
+### Responsibility
+
+`ExperimentService` records a generic experiment lifecycle across digital
+assets: observation, hypothesis, experiment, action, measurement, result,
+and learning. It does not apply external changes automatically.
+
+### Public Construction Contract
+
+```python
+ExperimentService() -> ExperimentService
+```
+
+### Public Methods
+
+```python
+create(asset_id: str, hypothesis: str, action: str) -> Result
+record_measurement(experiment_id: str, metrics: dict) -> Result
+complete(experiment_id: str, result: str, learning: str | None = None) -> Result
+get(experiment_id: str) -> Result
+```
+
+### Result and Failure Behavior
+
+All methods return `Result`. Invalid IDs, empty hypotheses/actions/results,
+invalid metrics, and missing experiments fail. Lifecycle records retain
+explicit `FACT`, `HYPOTHESIS`, `EXPERIMENT`, `ACTION`, and `RESULT` data.
+
+### Scope Boundaries
+
+This component does not call platforms, apply irreversible fixes, infer
+causes as facts, or hard-code a video, website, product, or channel.
+
+### Required Tests and Definition of Done
+
+Focused lifecycle, invalid-input, missing-record, metric, Result, v0.9
+regression, and compilation tests must pass with synchronized documentation.
+
+---
+
+## v0.9 Component #8 — Browser Agent
+
+### Canonical Paths
+
+```text
+agents/browser_agent.py
+services/browser_service.py
+```
+
+`BrowserAgent` delegates browser workflows to `BrowserService`; the service
+delegates to an injected `BrowserAdapter`. The adapter owns any browser
+runtime details. Public operations are `navigate`, `inspect`, `extract`,
+`interact`, `validate`, and `execute_workflow`.
+
+All operations return `Result`, reject invalid operations, and fail safely
+when no adapter is configured. Unit tests use deterministic fakes and make
+no real browser calls. Browser and computer automation remain separate.
+
+### Definition of Done
+
+Focused delegation/failure tests, v0.9 regression, compilation, and
+synchronized documentation pass.
+
+---
+
+## v0.9 Component #9 — Computer Agent
+
+### Canonical Paths
+
+```text
+agents/computer_agent.py
+services/computer_service.py
+```
+
+`ComputerAgent` delegates to `ComputerService`, which delegates to a
+replaceable `ComputerAdapter`. Computer operations require explicit
+permission and are limited to an allowlisted operation vocabulary. No
+destructive operation is enabled by default.
+
+Supported conceptual operations are `keyboard`, `mouse`, `window`,
+`application`, `screen`, and `verify_state`. All operations return
+`Result`; missing permission, invalid operations, missing adapters, and
+adapter failures return `Result.fail(...)`.
+
+Unit tests use deterministic adapter fakes and never control the real OS.
+
+### Definition of Done
+
+Focused delegation, permission, failure, regression, compilation, and
+documentation validation pass.
+
+---
+
+# End of Document
+---
+
+## CapabilityAgent
+
+Canonical path:
+
+```text
+agents/capability_agent.py
+```
+
+`CapabilityAgent` is a minimal task-level orchestration bridge for
+service-only capabilities that do not require a dedicated specialized
+Agent. It does not implement business logic, low-level execution, or
+provider behavior. It selects one documented service and invokes one
+documented public method through the existing `ServiceContainer`.
+
+Constructor:
+
+```python
+CapabilityAgent(services, task_type, service_name, method_name)
+```
+
+Public method:
+
+```python
+execute(task) -> Result
+```
+
+The agent accepts structured values in `task.data["payload"]`. For the
+string-oriented `research`, `video`, and `audio` tasks, the command body
+may be used as the single service argument when no payload is supplied.
+Other capabilities require a mapping payload matching the service
+contract; malformed or missing payloads return `Result.fail(...)`.
+
+The agent validates the registered service and method, catches service
+exceptions at the agent boundary, and returns the service's `Result`
+unchanged on successful invocation. It never creates adapters, performs
+external calls, or contains capability-specific business logic.
+
+The initial task/service mappings are:
+
+```text
+research    -> ResearchService.research
+analyze     -> AnalysisService.analyze
+plan        -> WorkflowService.plan
+content     -> ContentService.create
+video       -> VideoProductionService.create_plan
+audio       -> AudioService.create_plan
+media       -> MediaPipelineService.compose
+asset       -> DigitalAssetService.register
+product     -> ProductService.rank
+policy      -> PolicyService.evaluate
+monitor     -> PerformanceMonitoringService.record
+diagnose    -> DiagnosisService.diagnose
+experiment  -> ExperimentService.create
+publishing  -> PublishingService.publish
+```
+
+This bridge is limited to routing and argument-shape validation. Dedicated
+Agents remain preferred when a capability needs multi-step orchestration.
+
+Required tests cover construction, mapping, successful service Result
+propagation, invalid/missing payloads, missing services, service failures,
+and registry integration.

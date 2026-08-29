@@ -76,7 +76,9 @@ class ProcessRunner:
 
         return Result.fail(
             message="Process execution failed.",
-            data=process.stdout.strip(),
             errors=[process.stderr.strip()],
-            metadata=metadata,
+            metadata={
+                **metadata,
+                "stdout": process.stdout.strip(),
+            },
         )

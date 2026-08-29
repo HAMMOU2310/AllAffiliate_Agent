@@ -1,128 +1,125 @@
-"""
-core/router.py
-الموجه الرئيسي المحدث مع تفعيل طبقة تحليل النوايا الذكية (LLM Intent Classification).
-"""
+from core.logger import Logger
+from core.registry import AgentRegistry
+from core.result import Result
 
-from typing import Dict, Any, Optional
-import logging
+from agents.coding_agent import CodingAgent
+from agents.memory_agent import MemoryAgent
+from agents.browser_agent import BrowserAgent
+from agents.computer_agent import ComputerAgent
+from agents.capability_agent import CapabilityAgent
 
-logging.basicConfig(level=logging.INFO)
-logger = logging.getLogger("CommandRouter")
 
-class CommandRouter:
-    def __init__(self):
-        self._agents: Dict[str, Any] = {}
-        self._routes: Dict[str, str] = {}
-        self._default_agent_name: Optional[str] = None
+class TaskRouter:
+    """
+    Routes tasks to the appropriate Agent.
 
-    def register_agent(self, name: str, agent_instance: Any, is_default: bool = False) -> None:
+    TaskRouter is responsible only for agent registration
+    and task routing.
+
+    It does not contain business logic.
+    """
+
+    def __init__(self, services):
+
+        self.services = services
+
+        self.registry = AgentRegistry()
+
+        # -----------------------------
+        # Coding Agent
+        # -----------------------------
+
+        self.registry.register(
+            CodingAgent(self.services)
+        )
+
+        # -----------------------------
+        # Memory Agent
+        # -----------------------------
+
+        memory_manager = self.services.get("memory_manager")
+
+        self.registry.register(
+            MemoryAgent(memory_manager)
+        )
+
+        # -----------------------------
+        # Browser Agent
+        # -----------------------------
+
+        self.registry.register(
+            BrowserAgent(self.services)
+        )
+
+        # -----------------------------
+        # Computer Agent
+        # -----------------------------
+
+        self.registry.register(
+            ComputerAgent(self.services)
+        )
+
+        # -----------------------------
+        # Service-only capability agents
+        # -----------------------------
+
+        capability_mappings = (
+            ("research", "research_service", "research"),
+            ("analyze", "analysis_service", "analyze"),
+            ("plan", "workflow_service", "plan"),
+            ("content", "content_service", "create"),
+            ("video", "video_production_service", "create_plan"),
+            ("audio", "audio_service", "create_plan"),
+            ("media", "media_pipeline_service", "compose"),
+            ("asset", "digital_asset_service", "register"),
+            ("product", "product_service", "rank"),
+            ("policy", "policy_service", "evaluate"),
+            ("monitor", "performance_monitoring_service", "record"),
+            ("diagnose", "diagnosis_service", "diagnose"),
+            ("experiment", "experiment_service", "create"),
+            ("publishing", "publishing_service", "publish"),
+        )
+        for task_type, service_name, method_name in capability_mappings:
+            self.registry.register(
+                CapabilityAgent(
+                    self.services,
+                    task_type,
+                    service_name,
+                    method_name,
+                )
+            )
+
+    # --------------------------------------------------
+    # Routing
+    # --------------------------------------------------
+
+    def route(self, task) -> Result:
         """
-        تسجيل وكيل تنفيذي جديد في النظام.
+        Route a task to the registered Agent
+        responsible for its task type.
         """
-        self._agents[name] = agent_instance
-        logger.info(f"تم تسجيل الوكيل: {name}")
-        
-        if is_default or self._default_agent_name is None:
-            self._default_agent_name = name
-            logger.info(f"تم اعتماد '{name}' كوكيل افتراضي (Default Agent).")
 
-    def add_route(self, keyword_or_command: str, agent_name: str) -> None:
+        agent = self.registry.get(task.task_type)
+
+        if agent is None:
+
+            Logger.warning(
+                "لا يوجد Agent لهذه المهمة."
+            )
+
+            return Result.fail(
+                message="لا يوجد وكيل مناسب."
+            )
+
+        return agent.execute(task)
+
+    # --------------------------------------------------
+    # Agent Registry
+    # --------------------------------------------------
+
+    def list_agents(self) -> list[str]:
         """
-        ربط كلمة مفتاحية أو أمر مباشر بوكيل تنفيذي معين.
+        Return the registered agent task types.
         """
-        if agent_name not in self._agents:
-            raise ValueError(f"الوكيل '{agent_name}' غير مسجل في النظام.")
-        
-        self._routes[keyword_or_command.lower()] = agent_name
-        logger.info(f"تم ربط المسار '{keyword_or_command}' بالوكيل '{agent_name}'")
 
-    async def dispatch(self, user_input: str, context: Optional[Dict[str, Any]] = None) -> Any:
-        """
-        تحليل المدخلات وتوجيهها للوكيل المناسب (عبر الأوامر المباشرة أو التحليل الذكي بالـ LLM).
-        """
-        context = context or {}
-        cleaned_input = user_input.strip()
-        
-        if not cleaned_input:
-            return {"status": "error", "message": "المدخلات فارغة."}
-
-        # 1. محاولة التوجيه السريع عبر المطابقة المباشرة للأوامر
-        target_agent_name = self._resolve_route(cleaned_input)
-
-        # 2. إذا لم يكن هناك أمر مباشر، نلجأ لطبقة الذكاء الاصطناعي لتصنيف النية (Intent Classification)
-        if not target_agent_name:
-            target_agent_name = await self._classify_intent_with_llm(cleaned_input)
-
-        # 3. جلب الوكيل المناسب وتنفيذ الطلب
-        agent = self._agents.get(target_agent_name) or self._agents.get(self._default_agent_name)
-        
-        if not agent:
-            return {"status": "error", "message": "لا يوجد وكيل معالج متاح."}
-
-        logger.info(f"توجيه الطلب إلى الوكيل: {agent.name}")
-        
-        try:
-            if hasattr(agent, "execute") and callable(agent.execute):
-                return await agent.execute(cleaned_input, context)
-            else:
-                raise AttributeError(f"الوكيل لا يحتوي على الدالة 'execute'.")
-        except Exception as e:
-            logger.error(f"خطأ أثناء التنفيذ: {str(e)}")
-            return {"status": "error", "message": f"فشل التنفيذ: {str(e)}"}
-
-    def _resolve_route(self, text: str) -> Optional[str]:
-        """
-        مطابقة سريعة للأوامر والكلمات المفتاحية المباشرة.
-        """
-        first_word = text.split()[0].lower()
-        if first_word in self._routes:
-            return self._routes[first_word]
-            
-        for key, agent_name in self._routes.items():
-            if key in text.lower():
-                return agent_name
-
-        return None
-
-    async def _classify_intent_with_llm(self, text: str) -> str:
-        """
-        طبقة الذكاء الاصطناعي لتحليل النية واختيار الوكيل المناسب بناءً على وصف الوكلاء.
-        """
-        logger.info("جاري تحليل النية عبر نموذج الذكاء الاصطناعي (LLM Intent Classification)...")
-        
-        if not self._agents:
-            return self._default_agent_name
-
-        agents_info = []
-        for name, agent in self._agents.items():
-            desc = getattr(agent, "description", "لا يوجد وصف")
-            agents_info.append(f"- الاسم البرمجي (Key): {name}\n  الوصف: {desc}")
-        
-        agents_list_str = "\n".join(agents_info)
-
-        prompt = f"""
-أنت مساعد ذكي وموجه رئيسي لنظام متعدد الوكلاء. مهمتك هي تحليل طلب المستخدم أدناه واختيار الوكيل الأنسب لمعالجته من القائمة المتاحة.
-
-الوكلاء المتاحون في النظام:
-{agents_list_str}
-
-طلب المستخدم: "{text}"
-
-التعليمات الصارمة:
-1. اختر الاسم البرمجي (Key) للوكيل الأنسب فقط من القائمة أعلاه.
-2. أجب بالاسم البرمجي فقط بدون أي نصوص إضافية أو علامات تنصيص.
-3. إذا لم تجد وكيلًا مناسبًا تمامًا، أجب بـ: {self._default_agent_name}
-"""
-
-        try:
-            selected_agent = self._default_agent_name
-            
-            # تم إصلاح علامات التنصيص هنا لتفادي أخطاء الترجمة البرمجية
-            logger.info("تم اختيار الوكيل بنجاح عبر التحليل الذكي")
-            return selected_agent
-            
-        except Exception as e:
-            logger.error(f"خطأ أثناء تصنيف النية بالذكاء الاصطناعي: {str(e)}")
-            return self._default_agent_name
-
-router = CommandRouter()
+        return self.registry.list_agents()

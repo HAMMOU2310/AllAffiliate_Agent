@@ -4,9 +4,9 @@
 
 **Official Project Blueprint**
 
-**Version:** v0.4
+**Version:** v1.0
 
-**Status:** Core Stabilization
+**Status:** Integrated Autonomous Digital Operations Platform — Local DoD Validated
 
 **Document Version:** 1.0
 
@@ -289,7 +289,7 @@ Console
 
 # 14. Memory Layer
 
-ستُضاف في المراحل القادمة.
+تم تنفيذ طبقة الذاكرة والتحقق منها محليًا.
 
 تشمل:
 
@@ -405,19 +405,200 @@ Plugin System
 
 ## v0.7
 
-Advanced Router
+Cloud AI Foundation
+
+The v0.7 foundation consists of the approved `CloudAIProvider`
+abstraction and the approved, implemented, tested, and integrated
+`CloudAIService`.
+
+v0.7 Component #2 is approved:
+
+```text
+OpenAI Cloud AI Provider
+```
+
+Canonical path:
+
+```text
+providers/openai_provider.py
+```
+
+Public contract:
+
+```python
+OpenAIProvider()
+generate(prompt, model=None, parameters=None) -> Result
+```
+
+`OpenAIProvider` owns OpenAI-specific credentials, SDK configuration,
+API execution, response translation, and provider failure handling.
+
+`CloudAIService` remains responsible for provider registration, lookup,
+selection, invocation, and provider-neutral `Result` handling. Its
+generic lookup contract remains:
+
+```python
+get_provider(name) -> Result
+```
+
+Component #2 does not modify `CloudAIProvider`, `CloudAIService`,
+`ServiceContainer`, or the provider-neutral architecture.
+
+Component #2 does not include Gemini, Anthropic, local providers,
+factory layers, streaming, multimodal behavior, tool calling, or
+cross-provider orchestration.
+
+Required tests must cover construction, generation, Result behavior,
+failure behavior, secret redaction, registration, lookup, selection,
+and invocation.
+
+```text
+Component #2 Contract: Approved
+Component #2 Implementation: Complete and Tested
+```
+
+### v0.7 Definition of Done
+
+v0.7 is complete when the repository demonstrates all of the following:
+
+- The provider-neutral `CloudAIProvider` contract is available.
+- `CloudAIService` registers, looks up, selects, invokes, and normalizes
+  providers through `Result`.
+- The OpenAI provider implements the generic contract behind its own
+  provider boundary.
+- Success, invalid-input, failure, secret-redaction, integration, and
+  contract-compatibility tests pass using deterministic test doubles.
+- Core, Agents, Memory, Plugins, and ServiceContainer boundaries remain
+  intact.
+- No provider-specific feature is required by consumers.
 
 ## v0.8
 
-Cloud AI Integration
+Intelligence and Planning
+
+The v0.8 capability families are recorded at roadmap level only. Each
+family requires an independently approved contract before implementation:
+
+- Research Engine
+- Analysis and Reasoning Layer
+- Coding Intelligence
+- Content Intelligence
+- Workflow and Planning Engine
+- Digital Asset Registry
+- Content Persona
+- Policy and Shariah Compliance Firewall
+- Product and Affiliate Intelligence
+- Affiliate Identity and Tracking abstraction
+
+The preferred dependency direction is research, analysis, planning and
+workflow, content intelligence, coding intelligence, digital assets,
+product and affiliate intelligence, policy, persona, and tracking. This
+ordering does not authorize implementation without a component contract.
+
+Product and affiliate workflows must remain extensible and evidence-based;
+product selection must not reduce to a single sales metric. Affiliate
+identity and tracking are reusable entities or configurations rather than
+embedded ad hoc code.
+
+The Policy and Shariah Compliance Firewall is an isolated policy boundary,
+not provider logic. Its future decision vocabulary must distinguish
+`ALLOWED`, `BLOCKED`, and `REVIEW_REQUIRED`; borderline cases must remain
+representable as review cases, and blocked assets must never be silently
+published.
 
 ## v0.9
 
-Content Creation
+Production and Computer Operations
+
+The v0.9 capability families are:
+
+- Video Production Engine
+- Audio Engine
+- Media Pipeline
+- Browser Agent
+- Computer Agent
+- Publishing Gateway
+- Performance Monitoring
+- Diagnosis Engine
+- Experiment and Optimization Engine
+
+Video is a temporal production capability, not a slideshow pipeline. The
+future production flow is semantic understanding, temporal plan, stage
+graph, scene graph, motion, camera, audio, asset generation or acquisition,
+composition, continuity validation, rendering, and quality validation.
+Image generation is an optional supporting media capability.
+
+Publishing uses replaceable platform adapters. Monitoring operates on
+digital assets and records observations, metrics, evidence, hypotheses,
+diagnoses, actions, and results.
+
+### v0.9 Definition of Done
+
+v0.9 is complete when the nine documented production and computer
+capability families have canonical implementations, provider/tool or
+platform boundaries where applicable, focused deterministic tests,
+regression validation, successful compilation, and synchronized contract,
+structure, and state documentation. Computer control must remain
+permission-gated and must not select a real operating-system runtime in
+the core architecture. No external credentials are required for the
+local validation gate.
 
 ## v1.0
 
-Complete AI Platform
+Integrated Autonomous Digital Operations Platform
+
+The target end-to-end workflow is:
+
+```text
+Goal -> Planning -> Research -> Analysis -> Decision -> Creation
+-> Coding / Video / Media -> Browser / Computer execution
+-> Publishing -> Monitoring -> Diagnosis -> Safe Fix / Human Action
+-> Experiment -> Measurement -> Memory / Learning -> Report
+```
+
+The v1.0 integration must preserve the existing Core, Agents, Services,
+Memory, Plugin, and provider-neutral Cloud AI boundaries. It is not
+complete until the repository demonstrates the documented integrated
+workflow through implementation and validation.
+
+### Permanent Language Policy
+
+Arabic is the control and interaction language for user commands,
+explanations, reports, diagnostics, and project-owner communication.
+English is the default language for foreign-facing generated output,
+including videos, scripts, narration, captions, websites, marketing copy,
+and public content. Control language and output language are separate
+concerns.
+
+### v1.0 Integration Validation Scope
+
+The local validation suite exercises goal planning, research and analysis,
+content-to-temporal-video/audio composition, digital-asset monitoring and
+evidence-preserving diagnosis, experiment measurement and learning,
+product policy decisions, and fail-closed publishing. These tests use
+deterministic injected fakes; external credentials and real browser or
+operating-system runtimes remain integration-ready rather than required
+by the local gate.
+
+Service-only capabilities may be exposed to the main task route through a
+minimal CapabilityAgent orchestration bridge. The bridge must only select
+an existing Service method and pass structured task payloads; it must not
+duplicate business logic or create provider/tool implementations. Dedicated
+Agents remain preferred for multi-step capability workflows.
+
+The older v0.3/v0.4 roadmap and architecture wording in `docs/` and in
+historical sections of the project context are retained as history. This
+master blueprint supersedes them for current implementation decisions.
+
+### v0.8 Definition of Done
+
+v0.8 is complete when the repository demonstrates the documented
+Research, Analysis, Workflow, Content, Digital Asset, Product/Affiliate,
+Policy, Persona, and Affiliate Identity foundations through approved
+contracts, focused tests, regression validation, and synchronized
+documentation. These foundations must preserve facts versus hypotheses,
+keep policy decisions isolated, protect secrets, and avoid provider-
+specific coupling.
 
 ---
 

@@ -1,59 +1,47 @@
-"""
-services/python_runner.py
-
-Python execution service.
-"""
-
-from __future__ import annotations
-
 from pathlib import Path
+import subprocess
 
 from core.result import Result
-from services.base_service import BaseService
 
 
-class PythonRunner(BaseService):
+class PythonRunner:
     """
-    High-level service responsible for executing Python code.
-
-    This service delegates all execution to PythonTools.
+    مسؤول عن تشغيل ملفات Python.
     """
 
-    def run_script(
-        self,
-        script_path: str | Path,
-    ) -> Result:
-        """
-        Execute a Python script.
-        """
-        return self.python_tools.run_script(script_path)
+    def run_file(self, file_path: str) -> Result:
 
-    def run_module(
-        self,
-        module_name: str,
-    ) -> Result:
-        """
-        Execute a Python module.
-        """
-        return self.python_tools.run_module(module_name)
+        path = Path(file_path)
 
-    def run_code(
-        self,
-        code: str,
-    ) -> Result:
-        """
-        Execute Python source code.
-        """
-        return self.python_tools.run_code(code)
+        if not path.exists():
+            return Result.fail(
+                message=f"الملف غير موجود: {file_path}"
+            )
 
-    def python_version(self) -> Result:
-        """
-        Get Python version.
-        """
-        return self.python_tools.python_version()
+        if path.suffix != ".py":
+            return Result.fail(
+                message="الملف ليس Python."
+            )
 
-    def python_executable(self) -> Result:
-        """
-        Get Python executable.
-        """
-        return self.python_tools.executable()
+        try:
+
+            process = subprocess.run(
+                ["python", str(path)],
+                capture_output=True,
+                text=True,
+            )
+
+            return Result.ok(
+                message="تم تشغيل الملف.",
+                data={
+                    "stdout": process.stdout,
+                    "stderr": process.stderr,
+                    "returncode": process.returncode,
+                },
+            )
+
+        except Exception as e:
+
+            return Result.fail(
+                message=str(e)
+            )

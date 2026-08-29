@@ -4,11 +4,17 @@
 
 **Official Development Rules**
 
-**Project Version:** v0.4
+**Project Version:** v1.0
 
 **Document Version:** 1.0
 
 **Status:** Official Development Standard
+
+The v0.3/v0.4 version references and roadmap language in this historical
+rules document are retained for traceability. Current architecture and
+execution sequencing are governed by `project_context/PROJECT_BLUEPRINT.md`.
+Arabic is the control/reporting language; English is the default
+foreign-facing generated-output language.
 
 ---
 

@@ -16,7 +16,7 @@ def main():
 
     console.print(f"[bold cyan]{settings.get('project_name')}[/bold cyan]")
 
-    console.print(f"الإصدار : 0.1")
+    console.print(f"الإصدار : v1.0")
 
     console.print(f"اللغة : {settings.get('language')}")
 

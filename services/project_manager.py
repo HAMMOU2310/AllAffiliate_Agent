@@ -1,140 +1,80 @@
-"""
-services/project_manager.py
-
-Project management service.
-"""
-
-from __future__ import annotations
-
 from pathlib import Path
 
 from core.result import Result
-from services.base_service import BaseService
 
 
-class ProjectManager(BaseService):
+class ProjectManager:
     """
-    Manage Python projects.
-
-    This service coordinates multiple tools but does not
-    perform low-level operations directly.
+    مسؤول عن إنشاء وإدارة المشاريع.
     """
 
-    def project_exists(
-        self,
-        project_path: str | Path,
-    ) -> Result:
-        """
-        Check whether a project exists.
-        """
-        return self.file_tools.exists(project_path)
-
-    def create_directory(
-        self,
-        directory: str | Path,
-    ) -> Result:
-        """
-        Create a directory.
-        """
-
-        path = Path(directory)
+    def create_project(self, project_name: str):
 
         try:
-            path.mkdir(
+
+            root = Path("workspace") / project_name
+
+            if root.exists():
+
+                return Result.fail(
+                    message="المشروع موجود مسبقاً."
+                )
+
+            directories = (
+                "src",
+                "tests",
+                "docs",
+                "assets",
+            )
+
+            root.mkdir(
                 parents=True,
                 exist_ok=True,
             )
 
-            return Result.ok(
-                data=path,
-                message="Directory created successfully.",
-            )
+            for directory in directories:
 
-        except Exception as ex:
-            return Result.fail(
-                message="Failed to create directory.",
-                errors=[str(ex)],
-            )
-
-    def create_project(
-        self,
-        project_path: str | Path,
-    ) -> Result:
-        """
-        Create a new project structure.
-        """
-
-        project_path = Path(project_path)
-
-        folders = [
-            "agents",
-            "core",
-            "services",
-            "tools",
-            "workspace",
-            "docs",
-            "tests",
-        ]
-
-        try:
-            project_path.mkdir(
-                parents=True,
-                exist_ok=True,
-            )
-
-            for folder in folders:
-                (project_path / folder).mkdir(
+                (root / directory).mkdir(
                     parents=True,
                     exist_ok=True,
                 )
 
             return Result.ok(
-                data=project_path,
-                message="Project created successfully.",
-                metadata={
-                    "folders": folders,
+                message=f"تم إنشاء المشروع: {project_name}",
+                data={
+                    "path": str(root),
                 },
             )
 
-        except Exception as ex:
+        except Exception as e:
+
             return Result.fail(
-                message="Failed to create project.",
-                errors=[str(ex)],
+                message=str(e),
             )
 
-    def project_info(
-        self,
-        project_path: str | Path,
-    ) -> Result:
-        """
-        Retrieve project information.
-        """
+    def exists(self, project_name: str):
 
-        project_path = Path(project_path)
-
-        if not project_path.exists():
-            return Result.fail(
-                message="Project does not exist.",
-                errors=[str(project_path)],
-            )
-
-        folders = sorted(
-            p.name
-            for p in project_path.iterdir()
-            if p.is_dir()
-        )
-
-        files = sorted(
-            p.name
-            for p in project_path.iterdir()
-            if p.is_file()
-        )
+        root = Path("workspace") / project_name
 
         return Result.ok(
-            data={
-                "path": str(project_path.resolve()),
-                "folders": folders,
-                "files": files,
-            },
-            message="Project information retrieved successfully.",
+            data=root.exists(),
+        )
+
+    def list_projects(self):
+
+        workspace = Path("workspace")
+
+        workspace.mkdir(
+            exist_ok=True,
+        )
+
+        projects = [
+            p.name
+            for p in workspace.iterdir()
+            if p.is_dir()
+        ]
+
+        return Result.ok(
+            message="تم جلب المشاريع.",
+            data=projects,
         )
