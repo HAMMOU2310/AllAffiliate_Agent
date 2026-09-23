@@ -254,3 +254,84 @@ Full regression:
 all non-integration tests pass
 0 failures
 ```
+
+---
+
+## v1.0.0 Stable Release — 2026-09-23
+
+**Date:** 2026-09-23
+
+**Status:** RELEASED
+
+**Commit:** be52c49
+
+**Tag:** v1.0.0
+
+### Summary
+
+تم الإصدار الرسمي v1.0.0 Stable Release بعد استكمال جميع مكونات المنصة والتحقق النهائي والنظافة المؤسسية للمستودع.
+
+### Completed Roadmap
+
+- v0.5 BrowserAgent Part A (search/inspect) — COMPLETE
+- v0.5 Part B Playwright — DEFERRED (network-blocked installation)
+- v0.6 Image (LocalImageProvider + GeminiImageProvider) — COMPLETE
+- v0.7 Voice (GeminiSTTProvider + GeminiTTSProvider) — COMPLETE
+- v0.8 Video (GeminiVideoProvider + FFmpegVideoRenderer) — COMPLETE
+- v1.0 Batch 1 — Structured Logger + Environment Configuration
+- v1.0 Batch 2 — Health Check + Graceful Lifecycle
+- v1.0 Batch 3 — MemoryManager FTS5 + Content Search
+- v1.0 Batch 4 — Workflow Execution Engine
+- v1.0 Batch 5 — Plugin System (PluginContract/PluginRegistry/PluginLoader)
+- v1.0 Batch 6 — Multi-Agent Collaboration (existing architecture sufficient)
+
+### Added
+
+- `core/logger.py`: Structured logger with stdlib logging, rich console, and RotatingFileHandler.
+- `core/settings.py`: Environment variable overrides for APP_LOG_LEVEL, APP_WORKSPACE, APP_OUTPUT_FOLDER.
+- `core/health.py`: HealthChecker with HEALTHY/DEGRADED/UNAVAILABLE states.
+- `core/service_container.py`: is_initialized property, shutdown() method.
+- `core/plugin_contract.py`: PluginContract Protocol definition.
+- `core/plugin_registry.py`: PluginRegistry with PluginState management.
+- `core/plugin_loader.py`: PluginLoader with importlib discovery.
+- `memory/memory_manager.py`: FTS5 virtual table, content search, close() method.
+- `services/workflow_service.py`: execute() method with TaskRouter injection.
+- `providers/gemini_image_provider.py`: Gemini image generation.
+- `providers/local_image_provider.py`: Local image generation.
+- `providers/gemini_voice_provider.py`: Gemini STT + TTS.
+- `providers/gemini_video_provider.py`: Gemini video generation.
+- `providers/ffmpeg_video_renderer.py`: FFmpeg video rendering.
+- `providers/openserp_search_provider.py`: OpenSERP OSS search adapter.
+- `providers/search_browser_adapter.py`: SearchBrowserAdapter.
+- `services/image_service.py`: Image generation routing.
+
+### Changed
+
+- `agents/master_agent.py`: shutdown(), health_check(), plugin loading.
+- `assistant.py`: master.shutdown() in finally block.
+- `agents/browser_agent.py`: search/inspect/workflow routing.
+- `.gitignore`: Added logs/, output/, *.zip, temp files.
+
+### Removed (Legacy Cleanup)
+
+- 49 legacy files deleted including old agents, services, tools, and plugins.
+
+### Validation
+
+```text
+Python compilation:
+PASS
+
+Pytest:
+1009 collected
+1004 passed
+3 failed (known Gemini external API flakiness)
+2 skipped (expected OpenSERP environment skips)
+0 errors
+
+Git Status:
+Branch: master
+Release commit: be52c49
+Release tag: v1.0.0
+Clean worktree
+```

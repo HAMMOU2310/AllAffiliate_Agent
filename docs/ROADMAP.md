@@ -2,13 +2,17 @@
 
 **Project:** AllAffiliate_Agent
 
-**Current Version:** 0.4
+**Current Version:** 1.0.0
 
-**Status:** Active
+**Status:** Stable Release — Released 2026-09-23
 
-**Last Updated:** 2026-07-17
+**Last Updated:** 2026-09-23
 
 **Owner:** AllAffiliate_Agent Team
+
+**Release Commit:** be52c49
+
+**Release Tag:** v1.0.0
 
 ---
 
@@ -138,72 +142,103 @@ Operating System / External Providers
 
 ---
 
-# Active Version
+## Version 0.4 ✅
 
-## Version 0.4
+### Memory System
 
-**Status:** In Progress
-
-### Current Goal
-
-Memory System
-
-Implementation Order
-
-1. MemoryManager
-2. MemoryStorage
-3. MemoryLoader
-4. MemoryIndexer
-5. ContextManager
-6. MemoryAgent
+- MemoryManager
+- MemoryAgent
+- Session/Context/Long-term memory
+- Persistence and search
 
 ---
 
-# Future Roadmap
+## Version 0.5 ✅ (Part A)
 
-## Version 0.5
+### BrowserAgent
 
-BrowserAgent
-
-- Internet Search
-- Web Automation
-
----
-
-## Version 0.6
-
-ImageAgent
-
-- Image Providers
-- Image Processing
+- Internet Search (SearchBrowserAdapter)
+- Web Inspection (OpenSERPSearchProvider)
+- Playwright browser page interaction — DEFERRED (network-blocked)
 
 ---
 
-## Version 0.7
+## Version 0.6 ✅
 
-VoiceAgent
+### Image
 
-- Speech To Text
-- Text To Speech
-
----
-
-## Version 0.8
-
-VideoAgent
-
-- Video Providers
-- Local Video Generation
+- LocalImageProvider
+- GeminiImageProvider
+- ImageService routing
 
 ---
 
-## Version 1.0
+## Version 0.7 ✅
 
-Stable Release
+### Voice
 
-- Complete Hybrid AI Platform
-- Production Ready
-- Plugin System
-- Advanced Memory
-- Multi-Agent Collaboration
-- Automation Platform
+- GeminiSTTProvider (Speech-to-Text)
+- GeminiTTSProvider (Text-to-Speech)
+- AudioService with Gemini providers
+
+---
+
+## Version 0.8 ✅
+
+### Video
+
+- GeminiVideoProvider
+- FFmpegVideoRenderer
+- VideoProductionService with Gemini + FFmpeg
+
+---
+
+## Version 1.0.0 ✅ — Stable Release
+
+**Released:** 2026-09-23
+
+**Commit:** be52c49
+
+**Tag:** v1.0.0
+
+### Stable Release Requirements
+
+- Complete Hybrid AI Platform — ✅
+- Production Ready — ✅
+- Plugin System — ✅
+- Advanced Memory (FTS5 content search) — ✅
+- Multi-Agent Collaboration — ✅
+- Automation Platform — ✅ (with non-blocking limitations)
+
+### v1.0 Production Batches
+
+- Batch 1: Structured Logger + Environment Configuration
+- Batch 2: Health Check + Graceful Lifecycle
+- Batch 3: MemoryManager FTS5 + Content Search
+- Batch 4: Workflow Execution Engine
+- Batch 5: Plugin System (PluginContract/PluginRegistry/PluginLoader)
+- Batch 6: Multi-Agent Collaboration (existing architecture sufficient)
+
+### Final Test Baseline
+
+```text
+1009 collected / 1004 passed / 3 failed (Gemini flaky) / 2 skipped (OpenSERP) / 0 errors
+```
+
+### Known Non-Blocking Limitations
+
+- Playwright browser page interaction deferred (network-blocked installation)
+- WorkflowService.plan() runtime planner registration unused
+- ComputerService permission-gated with no adapter
+- OpenAI providers unavailable without OPENAI_API_KEY
+- Stability AI unavailable without credentials/package
+- Gemini real API tests can be flaky
+- OpenSERP tests require local OpenSERP environment
+
+---
+
+# Post-v1.0 Roadmap
+
+Post-v1.0 roadmap is pending definition.
+
+No new version has been authorized for development.

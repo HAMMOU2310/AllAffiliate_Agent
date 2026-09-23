@@ -293,43 +293,48 @@ Implemented and locally validated
 
 ## ImageAgent
 
-الموقع:
+Not implemented as a dedicated agent. Image generation is handled through:
 
 ```
-agents/image_agent.py
+services/image_service.py
+providers/gemini_image_provider.py
+providers/local_image_provider.py
 ```
 
-الحالة:
+Routed via CapabilityAgent pattern.
 
-Future
+Status: COMPLETE (CapabilityAgent + Service pattern)
 
 ---
 
 ## VideoAgent
 
-الموقع:
+Not implemented as a dedicated agent. Video production is handled through:
 
 ```
-agents/video_agent.py
+services/video_production_service.py
+providers/gemini_video_provider.py
+providers/ffmpeg_video_renderer.py
 ```
 
-الحالة:
+Routed via CapabilityAgent pattern.
 
-Future
+Status: COMPLETE (CapabilityAgent + Service pattern)
 
 ---
 
 ## VoiceAgent
 
-الموقع:
+Not implemented as a dedicated agent. Voice capabilities are handled through:
 
 ```
-agents/voice_agent.py
+services/audio_service.py
+providers/gemini_voice_provider.py (STT + TTS)
 ```
 
-الحالة:
+Routed via CapabilityAgent pattern.
 
-Future
+Status: COMPLETE (CapabilityAgent + Service pattern)
 
 ---
 
