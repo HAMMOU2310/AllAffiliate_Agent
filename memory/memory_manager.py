@@ -50,6 +50,7 @@ class MemoryManager:
             exist_ok=True,
         )
 
+        self._fts_available = self._check_fts5()
         self._initialize_database()
 
     # ------------------------------------------------------------------
@@ -68,6 +69,18 @@ class MemoryManager:
         connection.row_factory = sqlite3.Row
 
         return connection
+
+    @staticmethod
+    def _check_fts5() -> bool:
+        """Detect whether FTS5 is available in this SQLite build."""
+        try:
+            conn = sqlite3.connect(":memory:")
+            conn.execute("CREATE VIRTUAL TABLE _fts_test USING fts5(content)")
+            conn.execute("DROP TABLE _fts_test")
+            conn.close()
+            return True
+        except sqlite3.OperationalError:
+            return False
 
     def _initialize_database(self) -> None:
         """
@@ -108,6 +121,34 @@ class MemoryManager:
                 """
                 CREATE INDEX IF NOT EXISTS idx_memories_key
                 ON memories(key)
+                """
+            )
+
+            if self._fts_available:
+                self._initialize_fts(connection)
+
+    def _initialize_fts(self, connection: sqlite3.Connection) -> None:
+        """Create the FTS5 virtual table and backfill from memories."""
+        connection.execute(
+            """
+            CREATE VIRTUAL TABLE IF NOT EXISTS memories_fts
+            USING fts5(
+                memory_id UNINDEXED,
+                key,
+                value
+            )
+            """
+        )
+
+        existing_count = connection.execute(
+            "SELECT COUNT(*) FROM memories_fts"
+        ).fetchone()[0]
+
+        if existing_count == 0:
+            connection.execute(
+                """
+                INSERT INTO memories_fts (memory_id, key, value)
+                SELECT id, key, value FROM memories
                 """
             )
 
@@ -231,6 +272,22 @@ class MemoryManager:
                     ),
                 )
 
+                if self._fts_available:
+                    connection.execute(
+                        """
+                        DELETE FROM memories_fts
+                        WHERE memory_id = ?
+                        """,
+                        (memory_id,),
+                    )
+                    connection.execute(
+                        """
+                        INSERT INTO memories_fts (memory_id, key, value)
+                        VALUES (?, ?, ?)
+                        """,
+                        (memory_id, key, serialized_value),
+                    )
+
                 return memory_id
 
             memory_id = str(uuid.uuid4())
@@ -260,6 +317,15 @@ class MemoryManager:
                     now,
                 ),
             )
+
+            if self._fts_available:
+                connection.execute(
+                    """
+                    INSERT INTO memories_fts (memory_id, key, value)
+                    VALUES (?, ?, ?)
+                    """,
+                    (memory_id, key, serialized_value),
+                )
 
             return memory_id
 
@@ -384,55 +450,73 @@ class MemoryManager:
         limit: int = 20,
     ) -> list[dict[str, Any]]:
         """
-        Search memory entries by key.
+        Search memory entries by key and content.
 
-        The search is intentionally simple and deterministic.
+        Uses FTS5 when available for full-text search across key and
+        value fields.  Falls back to LIKE-based key search when FTS5
+        is unavailable or the query contains FTS-special characters.
         """
 
         if limit <= 0:
             return []
 
+        if not query or not query.strip():
+            return []
+
         if memory_type is not None:
             self._validate_memory_type(memory_type)
 
+        if self._fts_available and self._is_safe_fts_query(query):
+            return self._search_fts(query, memory_type, session_id, limit)
+
+        return self._search_like(query, memory_type, session_id, limit)
+
+    @staticmethod
+    def _is_safe_fts_query(query: str) -> bool:
+        """Return True if query is safe for FTS5 MATCH syntax."""
+        unsafe = set('*"\'():;^[]{}\\')
+        return not any(c in unsafe for c in query)
+
+    def _search_fts(
+        self,
+        query: str,
+        memory_type: str | None,
+        session_id: str | None,
+        limit: int,
+    ) -> list[dict[str, Any]]:
+        """FTS5-based content search across key and value."""
+        fts_query = self._build_fts_query(query)
+
         sql = """
             SELECT
-                id,
-                memory_type,
-                key,
-                value,
-                session_id,
-                metadata,
-                created_at,
-                updated_at
-            FROM memories
-            WHERE key LIKE ?
+                m.id,
+                m.memory_type,
+                m.key,
+                m.value,
+                m.session_id,
+                m.metadata,
+                m.created_at,
+                m.updated_at
+            FROM memories m
+            JOIN memories_fts fts ON fts.memory_id = m.id
+            WHERE memories_fts MATCH ?
         """
 
-        parameters: list[Any] = [
-            f"%{query}%",
-        ]
+        parameters: list[Any] = [fts_query]
 
         if memory_type is not None:
-            sql += " AND memory_type = ?"
+            sql += " AND m.memory_type = ?"
             parameters.append(memory_type)
 
         if session_id is not None:
-            sql += " AND session_id = ?"
+            sql += " AND m.session_id = ?"
             parameters.append(session_id)
 
-        sql += """
-            ORDER BY updated_at DESC
-            LIMIT ?
-        """
-
+        sql += " ORDER BY m.updated_at DESC LIMIT ?"
         parameters.append(limit)
 
         with self._connect() as connection:
-            rows = connection.execute(
-                sql,
-                parameters,
-            ).fetchall()
+            rows = connection.execute(sql, parameters).fetchall()
 
         return [
             {
@@ -447,6 +531,75 @@ class MemoryManager:
             }
             for row in rows
         ]
+
+    @staticmethod
+    def _build_fts_query(query: str) -> str:
+        """Build an FTS5 MATCH query that searches key and value."""
+        tokens = query.split()
+        if not tokens:
+            return '""'
+        parts = [f'"{t}"' for t in tokens]
+        return " OR ".join(parts)
+
+    def _search_like(
+        self,
+        query: str,
+        memory_type: str | None,
+        session_id: str | None,
+        limit: int,
+    ) -> list[dict[str, Any]]:
+        """Fallback LIKE-based search across key and value."""
+        sql = """
+            SELECT
+                id,
+                memory_type,
+                key,
+                value,
+                session_id,
+                metadata,
+                created_at,
+                updated_at
+            FROM memories
+            WHERE key LIKE ?
+               OR value LIKE ?
+        """
+
+        like_param = f"%{query}%"
+        parameters: list[Any] = [like_param, like_param]
+
+        if memory_type is not None:
+            sql += " AND memory_type = ?"
+            parameters.append(memory_type)
+
+        if session_id is not None:
+            sql += " AND session_id = ?"
+            parameters.append(session_id)
+
+        sql += " ORDER BY updated_at DESC LIMIT ?"
+        parameters.append(limit)
+
+        with self._connect() as connection:
+            rows = connection.execute(sql, parameters).fetchall()
+
+        seen_ids: set[str] = set()
+        results: list[dict[str, Any]] = []
+
+        for row in rows:
+            if row["id"] in seen_ids:
+                continue
+            seen_ids.add(row["id"])
+            results.append({
+                "id": row["id"],
+                "memory_type": row["memory_type"],
+                "key": row["key"],
+                "value": self._deserialize(row["value"]),
+                "session_id": row["session_id"],
+                "metadata": self._deserialize(row["metadata"]) or {},
+                "created_at": row["created_at"],
+                "updated_at": row["updated_at"],
+            })
+
+        return results
 
     # ------------------------------------------------------------------
     # List
@@ -541,6 +694,29 @@ class MemoryManager:
 
         with self._connect() as connection:
 
+            if self._fts_available:
+                ids_to_delete = connection.execute(
+                    """
+                    SELECT id FROM memories
+                    WHERE memory_type = ?
+                      AND key = ?
+                      AND (
+                          session_id = ?
+                          OR (
+                              session_id IS NULL
+                              AND ? IS NULL
+                          )
+                      )
+                    """,
+                    (memory_type, key, session_id, session_id),
+                ).fetchall()
+
+                for row in ids_to_delete:
+                    connection.execute(
+                        "DELETE FROM memories_fts WHERE memory_id = ?",
+                        (row["id"],),
+                    )
+
             cursor = connection.execute(
                 """
                 DELETE FROM memories
@@ -580,6 +756,22 @@ class MemoryManager:
             raise ValueError("Session ID cannot be empty.")
 
         with self._connect() as connection:
+
+            if self._fts_available:
+                ids_to_delete = connection.execute(
+                    """
+                    SELECT id FROM memories
+                    WHERE session_id = ?
+                      AND memory_type IN ('session', 'context')
+                    """,
+                    (session_id,),
+                ).fetchall()
+
+                for row in ids_to_delete:
+                    connection.execute(
+                        "DELETE FROM memories_fts WHERE memory_id = ?",
+                        (row["id"],),
+                    )
 
             cursor = connection.execute(
                 """
@@ -651,3 +843,12 @@ class MemoryManager:
 
         except sqlite3.Error:
             return False
+
+    def close(self) -> None:
+        """Release memory resources.
+
+        MemoryManager uses ephemeral connections, so this is a
+        no-op that establishes the lifecycle contract for
+        ServiceContainer.shutdown().
+        """
+        pass

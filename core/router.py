@@ -68,8 +68,8 @@ class TaskRouter:
             ("analyze", "analysis_service", "analyze"),
             ("plan", "workflow_service", "plan"),
             ("content", "content_service", "create"),
-            ("video", "video_production_service", "create_plan"),
-            ("audio", "audio_service", "create_plan"),
+            ("video", "video_production_service", "execute"),
+            ("audio", "audio_service", "execute"),
             ("media", "media_pipeline_service", "compose"),
             ("asset", "digital_asset_service", "register"),
             ("product", "product_service", "rank"),
@@ -78,6 +78,7 @@ class TaskRouter:
             ("diagnose", "diagnosis_service", "diagnose"),
             ("experiment", "experiment_service", "create"),
             ("publishing", "publishing_service", "publish"),
+            ("image", "image_service", "execute"),
         )
         for task_type, service_name, method_name in capability_mappings:
             self.registry.register(

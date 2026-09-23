@@ -1,4 +1,4 @@
-"""Separable audio planning boundary for v0.9."""
+"""Provider-neutral audio service boundary for v0.7."""
 
 from __future__ import annotations
 
@@ -8,16 +8,145 @@ from typing import Any, Protocol
 from core.result import Result
 
 
+# --------------------------------------------------
+# Provider Protocols
+# --------------------------------------------------
+
+
 class AudioInterpreter(Protocol):
     def interpret(self, instruction: str) -> Result:
         ...
 
 
-class AudioService:
-    """Validate timed audio tracks without rendering them."""
+class SpeechToTextProvider(Protocol):
+    """Provider boundary for speech-to-text transcription."""
 
-    def __init__(self, interpreter: AudioInterpreter | None = None) -> None:
+    def transcribe(
+        self,
+        source: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        ...
+
+
+class TextToSpeechProvider(Protocol):
+    """Provider boundary for text-to-speech synthesis."""
+
+    def synthesize(
+        self,
+        text: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        ...
+
+
+# --------------------------------------------------
+# Audio Service
+# --------------------------------------------------
+
+
+class AudioService:
+    """Service boundary for audio operations."""
+
+    _OPERATIONS = frozenset({"transcribe", "speak", "create_plan"})
+
+    def __init__(
+        self,
+        interpreter: AudioInterpreter | None = None,
+        stt_provider: SpeechToTextProvider | None = None,
+        tts_provider: TextToSpeechProvider | None = None,
+    ) -> None:
         self._interpreter = interpreter
+        self._stt_provider = stt_provider
+        self._tts_provider = tts_provider
+
+    def execute(self, command: str) -> Result:
+        """Main entry point for audio commands."""
+        if not isinstance(command, str) or not command.strip():
+            return Result.fail("Audio command is invalid.")
+
+        body = command.strip()
+        parts = body.split(maxsplit=1)
+        operation = parts[0].lower() if parts else ""
+        args = parts[1] if len(parts) > 1 else ""
+
+        if operation == "transcribe":
+            return self.transcribe(args)
+        if operation == "speak":
+            return self.speak(args)
+        if operation == "create_plan":
+            return self.create_plan(args)
+
+        return Result.fail(
+            f"Unsupported audio operation: {operation}. "
+            f"Supported: {', '.join(sorted(self._OPERATIONS))}"
+        )
+
+    # --------------------------------------------------
+    # Speech-to-Text
+    # --------------------------------------------------
+
+    def transcribe(
+        self,
+        source: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        if not isinstance(source, str) or not source.strip():
+            return Result.fail("Transcription source is invalid.")
+
+        if self._stt_provider is None:
+            return Result.fail("No speech-to-text provider is registered.")
+
+        transcribe_fn = getattr(self._stt_provider, "transcribe", None)
+        if not callable(transcribe_fn):
+            return Result.fail("Speech-to-text provider is invalid.")
+
+        try:
+            result = transcribe_fn(source.strip(), parameters)
+        except Exception:
+            return Result.fail("Speech-to-text provider execution failed.")
+
+        if not isinstance(result, Result):
+            return Result.fail(
+                "Speech-to-text provider returned an invalid Result."
+            )
+
+        return result
+
+    # --------------------------------------------------
+    # Text-to-Speech
+    # --------------------------------------------------
+
+    def speak(
+        self,
+        text: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        if not isinstance(text, str) or not text.strip():
+            return Result.fail("Speech text is invalid.")
+
+        if self._tts_provider is None:
+            return Result.fail("No text-to-speech provider is registered.")
+
+        synthesize_fn = getattr(self._tts_provider, "synthesize", None)
+        if not callable(synthesize_fn):
+            return Result.fail("Text-to-speech provider is invalid.")
+
+        try:
+            result = synthesize_fn(text.strip(), parameters)
+        except Exception:
+            return Result.fail("Text-to-speech provider execution failed.")
+
+        if not isinstance(result, Result):
+            return Result.fail(
+                "Text-to-speech provider returned an invalid Result."
+            )
+
+        return result
+
+    # --------------------------------------------------
+    # Audio Plan (legacy v0.9 path)
+    # --------------------------------------------------
 
     def create_plan(self, instruction: str) -> Result:
         if not isinstance(instruction, str) or not instruction.strip():

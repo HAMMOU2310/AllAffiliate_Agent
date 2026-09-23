@@ -12,7 +12,7 @@ from core.result import Result
 class CapabilityAgent(BaseAgent):
     """Delegate one task type to one existing Service method."""
 
-    _STRING_TASKS = {"research", "video", "audio"}
+    _STRING_TASKS = {"research", "video", "audio", "image"}
 
     def __init__(
         self,

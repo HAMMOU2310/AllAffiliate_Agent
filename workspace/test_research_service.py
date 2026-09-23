@@ -85,5 +85,130 @@ class ResearchServiceTests(unittest.TestCase):
         self.assertFalse(result.success)
 
 
+class ResearchServiceEdgeCaseTests(unittest.TestCase):
+    def test_invalid_sources_constructor(self):
+        service = ResearchService("not a source list")
+        result = service.research("topic")
+        self.assertFalse(result.success)
+        self.assertIn("invalid", result.message.lower())
+
+    def test_none_query_fails(self):
+        result = ResearchService().research(None)
+        self.assertFalse(result.success)
+
+    def test_non_string_query_fails(self):
+        result = ResearchService().research(123)
+        self.assertFalse(result.success)
+
+    def test_scope_none_is_valid(self):
+        source = FakeSource(
+            Result.ok(
+                data=[
+                    {
+                        "source": "s",
+                        "title": "t",
+                        "content": "c",
+                        "kind": "FACT",
+                    }
+                ]
+            )
+        )
+        result = ResearchService([source]).research("topic", scope=None)
+        self.assertTrue(result.success)
+
+    def test_scope_non_string_fails(self):
+        result = ResearchService().research("topic", scope=123)
+        self.assertFalse(result.success)
+
+    def test_source_without_search_method(self):
+        class BadSource:
+            pass
+
+        result = ResearchService([BadSource()]).research("topic")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Research source is invalid.")
+
+    def test_source_returns_non_result(self):
+        class NonResultSource:
+            def search(self, query, scope=None):
+                return "not a result"
+
+        result = ResearchService([NonResultSource()]).research("topic")
+        self.assertFalse(result.success)
+        self.assertIn("invalid Result", result.message)
+
+    def test_source_returns_failure(self):
+        source = FakeSource(Result.fail("source error"))
+        result = ResearchService([source]).research("topic")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Research source failed.")
+
+    def test_multiple_sources_aggregate(self):
+        s1 = FakeSource(
+            Result.ok(
+                data=[
+                    {
+                        "source": "a",
+                        "title": "A",
+                        "content": "Ac",
+                        "kind": "FACT",
+                    }
+                ]
+            )
+        )
+        s2 = FakeSource(
+            Result.ok(
+                data=[
+                    {
+                        "source": "b",
+                        "title": "B",
+                        "content": "Bc",
+                        "kind": "FACT",
+                    }
+                ]
+            )
+        )
+        result = ResearchService([s1, s2]).research("topic")
+        self.assertTrue(result.success)
+        self.assertEqual(len(result.data), 2)
+        self.assertEqual(result.metadata["source_count"], 2)
+
+    def test_normalize_evidence_none_data(self):
+        result = ResearchService._normalize_evidence(None)
+        self.assertEqual(result, [])
+
+    def test_normalize_evidence_string_data(self):
+        result = ResearchService._normalize_evidence("bad")
+        self.assertIsNone(result)
+
+    def test_normalize_evidence_bytes_data(self):
+        result = ResearchService._normalize_evidence(b"bad")
+        self.assertIsNone(result)
+
+    def test_normalize_evidence_mapping_data(self):
+        result = ResearchService._normalize_evidence({"key": "val"})
+        self.assertIsNone(result)
+
+    def test_normalize_evidence_non_mapping_record(self):
+        result = ResearchService._normalize_evidence(["not a dict"])
+        self.assertIsNone(result)
+
+    def test_normalize_evidence_missing_required_field(self):
+        result = ResearchService._normalize_evidence(
+            [{"source": "s", "title": "t", "kind": "FACT"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_evidence_non_string_field(self):
+        result = ResearchService._normalize_evidence(
+            [{"source": "s", "title": "t", "content": 123, "kind": "FACT"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_evidence_non_iterable(self):
+        result = ResearchService._normalize_evidence(42)
+        self.assertIsNone(result)
+
+
 if __name__ == "__main__":
     unittest.main()

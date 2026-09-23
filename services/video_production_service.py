@@ -1,4 +1,4 @@
-"""Temporal video production planning boundary for v0.9."""
+"""Provider-neutral video production service boundary for v0.8."""
 
 from __future__ import annotations
 
@@ -8,6 +8,11 @@ from typing import Any, Protocol
 from core.result import Result
 
 
+# --------------------------------------------------
+# Provider Protocols
+# --------------------------------------------------
+
+
 class VideoInterpreter(Protocol):
     """Optional injected temporal instruction interpreter."""
 
@@ -15,11 +20,145 @@ class VideoInterpreter(Protocol):
         ...
 
 
-class VideoProductionService:
-    """Validate temporal production plans without rendering media."""
+class VideoGenerator(Protocol):
+    """Provider boundary for AI video generation."""
 
-    def __init__(self, interpreter: VideoInterpreter | None = None) -> None:
+    def generate(
+        self,
+        prompt: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        ...
+
+
+class VideoRenderer(Protocol):
+    """Provider boundary for video rendering/composition."""
+
+    def render(
+        self,
+        plan: dict[str, Any],
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        ...
+
+
+# --------------------------------------------------
+# Video Production Service
+# --------------------------------------------------
+
+
+class VideoProductionService:
+    """Service boundary for video operations."""
+
+    _OPERATIONS = frozenset({"generate", "render", "create_plan"})
+
+    def __init__(
+        self,
+        interpreter: VideoInterpreter | None = None,
+        generator: VideoGenerator | None = None,
+        renderer: VideoRenderer | None = None,
+    ) -> None:
         self._interpreter = interpreter
+        self._generator = generator
+        self._renderer = renderer
+
+    def execute(self, command: str) -> Result:
+        """Main entry point for video commands."""
+        if not isinstance(command, str) or not command.strip():
+            return Result.fail("Video command is invalid.")
+
+        body = command.strip()
+        parts = body.split(maxsplit=1)
+        operation = parts[0].lower() if parts else ""
+        args = parts[1] if len(parts) > 1 else ""
+
+        if operation == "generate":
+            return self.generate(args)
+        if operation == "render":
+            return self.render(args)
+        if operation == "create_plan":
+            return self.create_plan(args)
+
+        return Result.fail(
+            f"Unsupported video operation: {operation}. "
+            f"Supported: {', '.join(sorted(self._OPERATIONS))}"
+        )
+
+    # --------------------------------------------------
+    # Video Generation
+    # --------------------------------------------------
+
+    def generate(
+        self,
+        prompt: str,
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        if not isinstance(prompt, str) or not prompt.strip():
+            return Result.fail("Video prompt is invalid.")
+
+        if self._generator is None:
+            return Result.fail("No video generation provider is registered.")
+
+        generate_fn = getattr(self._generator, "generate", None)
+        if not callable(generate_fn):
+            return Result.fail("Video generation provider is invalid.")
+
+        try:
+            result = generate_fn(prompt.strip(), parameters)
+        except Exception:
+            return Result.fail("Video generation provider execution failed.")
+
+        if not isinstance(result, Result):
+            return Result.fail(
+                "Video generation provider returned an invalid Result."
+            )
+
+        return result
+
+    # --------------------------------------------------
+    # Video Rendering
+    # --------------------------------------------------
+
+    def render(
+        self,
+        plan: str | dict[str, Any],
+        parameters: dict[str, Any] | None = None,
+    ) -> Result:
+        if isinstance(plan, str):
+            plan = plan.strip()
+            if not plan:
+                return Result.fail("Video render plan is invalid.")
+            try:
+                import json
+                plan = json.loads(plan)
+            except (json.JSONDecodeError, ValueError):
+                return Result.fail("Video render plan is not valid JSON.")
+
+        if not isinstance(plan, dict):
+            return Result.fail("Video render plan must be a dict or JSON string.")
+
+        if self._renderer is None:
+            return Result.fail("No video rendering provider is registered.")
+
+        render_fn = getattr(self._renderer, "render", None)
+        if not callable(render_fn):
+            return Result.fail("Video rendering provider is invalid.")
+
+        try:
+            result = render_fn(plan, parameters)
+        except Exception:
+            return Result.fail("Video rendering provider execution failed.")
+
+        if not isinstance(result, Result):
+            return Result.fail(
+                "Video rendering provider returned an invalid Result."
+            )
+
+        return result
+
+    # --------------------------------------------------
+    # Temporal Plan (legacy path)
+    # --------------------------------------------------
 
     def create_plan(self, instruction: str) -> Result:
         if not isinstance(instruction, str) or not instruction.strip():

@@ -11,6 +11,8 @@ It only selects and invokes the appropriate service.
 from __future__ import annotations
 
 from core.result import Result
+from tools.file_tools import FileTools
+from tools.python_tools import PythonTools
 
 
 class CommandDispatcher:
@@ -24,10 +26,8 @@ class CommandDispatcher:
     def __init__(self, services):
         self.services = services
 
-        self.code_writer = services.get("code_writer")
-        self.file_tools = services.get("file_tools")
-        self.text_editor = services.get("text_editor")
-        self.python_runner = services.get("python_runner")
+        self.file_tools = FileTools()
+        self.python_tools = PythonTools()
         self.project_manager = services.get("project_manager")
 
     # --------------------------------------------------
@@ -181,7 +181,7 @@ class CommandDispatcher:
                 message="يجب تحديد اسم الملف."
             )
 
-        return self.code_writer.create_file(filename)
+        return self.file_tools.write_text(filename, "")
 
     def run(self, filename: str) -> Result:
         if not filename:
@@ -189,10 +189,10 @@ class CommandDispatcher:
                 message="يجب تحديد اسم الملف."
             )
 
-        return self.python_runner.run_file(filename)
+        return self.python_tools.run_script(filename)
 
     def list(self) -> Result:
-        return self.file_tools.list_files()
+        return self.file_tools.list_files("workspace")
 
     def read(self, filename: str) -> Result:
         if not filename:
@@ -200,7 +200,7 @@ class CommandDispatcher:
                 message="يجب تحديد اسم الملف."
             )
 
-        return self.file_tools.read_file(filename)
+        return self.file_tools.read_text(filename)
 
     def delete(self, filename: str) -> Result:
         if not filename:
@@ -208,7 +208,7 @@ class CommandDispatcher:
                 message="يجب تحديد اسم الملف."
             )
 
-        return self.file_tools.delete_file(filename)
+        return self.file_tools.delete(filename)
 
     def write(self, filename: str, content: str) -> Result:
         if not filename:
@@ -216,7 +216,7 @@ class CommandDispatcher:
                 message="يجب تحديد اسم الملف."
             )
 
-        return self.text_editor.write(
+        return self.file_tools.write_text(
             filename,
             content,
         )
@@ -227,7 +227,7 @@ class CommandDispatcher:
                 message="يجب تحديد اسم الملف."
             )
 
-        return self.text_editor.append(
+        return self.file_tools.append_text(
             filename,
             content,
         )

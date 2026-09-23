@@ -67,5 +67,110 @@ class WorkflowServiceTests(unittest.TestCase):
         self.assertNotIn("private detail", repr(errored))
 
 
+class WorkflowServiceEdgeCaseTests(unittest.TestCase):
+    def test_planner_without_plan_method(self):
+        class BadPlanner:
+            pass
+
+        result = WorkflowService(BadPlanner()).plan("goal")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Workflow planner is invalid.")
+
+    def test_empty_steps_list(self):
+        planner = FakePlanner(Result.ok(data=[]))
+        result = WorkflowService(planner).plan("goal")
+        self.assertTrue(result.success)
+        self.assertEqual(result.data, [])
+        self.assertEqual(result.metadata["step_count"], 0)
+
+    def test_context_none_is_valid(self):
+        planner = FakePlanner(Result.ok(data=STEPS))
+        result = WorkflowService(planner).plan("goal", context=None)
+        self.assertTrue(result.success)
+
+    def test_normalize_steps_string_input(self):
+        result = WorkflowService._normalize_steps("bad")
+        self.assertIsNone(result)
+
+    def test_normalize_steps_bytes_input(self):
+        result = WorkflowService._normalize_steps(b"bad")
+        self.assertIsNone(result)
+
+    def test_normalize_steps_mapping_input(self):
+        result = WorkflowService._normalize_steps({"key": "val"})
+        self.assertIsNone(result)
+
+    def test_normalize_steps_non_mapping_item(self):
+        result = WorkflowService._normalize_steps(["not a dict"])
+        self.assertIsNone(result)
+
+    def test_normalize_steps_missing_id(self):
+        result = WorkflowService._normalize_steps(
+            [{"description": "x", "status": "READY"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_steps_empty_id(self):
+        result = WorkflowService._normalize_steps(
+            [{"id": "  ", "description": "x", "status": "READY"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_steps_missing_description(self):
+        result = WorkflowService._normalize_steps(
+            [{"id": "x", "status": "READY"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_steps_empty_description(self):
+        result = WorkflowService._normalize_steps(
+            [{"id": "x", "description": "  ", "status": "READY"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_steps_missing_status(self):
+        result = WorkflowService._normalize_steps(
+            [{"id": "x", "description": "y"}]
+        )
+        self.assertIsNone(result)
+
+    def test_normalize_steps_invalid_status(self):
+        result = WorkflowService._normalize_steps(
+            [{"id": "x", "description": "y", "status": "INVALID"}]
+        )
+        self.assertIsNone(result)
+
+    def test_planner_exception_returns_fail(self):
+        planner = FakePlanner(error=RuntimeError("crash"))
+        result = WorkflowService(planner).plan("goal")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Workflow planner execution failed.")
+
+    def test_planner_returns_non_result(self):
+        class NonResultPlanner:
+            def plan(self, goal, context=None):
+                return "not a result"
+
+        result = WorkflowService(NonResultPlanner()).plan("goal")
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Workflow planner failed.")
+
+    def test_goal_stripped_in_metadata(self):
+        planner = FakePlanner(Result.ok(data=STEPS))
+        result = WorkflowService(planner).plan("  my goal  ")
+        self.assertTrue(result.success)
+        self.assertEqual(result.metadata["goal"], "my goal")
+
+    def test_step_status_normalized_uppercase(self):
+        planner = FakePlanner(
+            Result.ok(
+                data=[{"id": "a", "description": "desc", "status": "ready"}]
+            )
+        )
+        result = WorkflowService(planner).plan("goal")
+        self.assertTrue(result.success)
+        self.assertEqual(result.data[0]["status"], "READY")
+
+
 if __name__ == "__main__":
     unittest.main()

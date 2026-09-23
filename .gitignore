@@ -5,3 +5,12 @@ __pycache__/
 .pytest_cache/
 *.py[cod]
 .env
+logs/
+output/
+*.zip
+workspace/hello.txt
+frontend_source.txt
+project_source.txt
+project_clean.txt
+project_files.txt
+project_structure.txt

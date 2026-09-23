@@ -1,24 +1,29 @@
 from dotenv import load_dotenv
 
-from services.code_writer import CodeWriter
-from services.python_runner import PythonRunner
-from services.file_tools import FileTools
-from services.text_editor import TextEditor
 from services.project_manager import ProjectManager
 from services.cloud_ai_service import CloudAIService
+from providers.openai_provider import OpenAIProvider
+from providers.gemini_provider import GeminiProvider
+from providers.cloud_ai_content_generator import CloudAIContentGenerator
 from services.research_service import ResearchService
+from providers.openserp_search_provider import OpenSERPSearchProvider
 from services.analysis_service import AnalysisService
 from services.workflow_service import WorkflowService
 from services.content_service import ContentService
 from services.digital_asset_service import DigitalAssetService
 from services.product_service import ProductService
 from services.policy_service import PolicyService
-from services.persona_service import PersonaService
-from services.affiliate_identity_service import AffiliateIdentityService
 from services.video_production_service import VideoProductionService
+from providers.gemini_video_provider import GeminiVideoProvider
+from providers.ffmpeg_video_renderer import FFmpegVideoRenderer
 from services.audio_service import AudioService
 from services.media_pipeline_service import MediaPipelineService
+from services.image_service import ImageService
+from providers.local_image_provider import LocalImageProvider
+from providers.gemini_image_provider import GeminiImageProvider
+from providers.gemini_voice_provider import GeminiSTTProvider, GeminiTTSProvider
 from services.browser_service import BrowserService
+from providers.search_browser_adapter import SearchBrowserAdapter
 from services.computer_service import ComputerService
 from services.publishing_service import PublishingService
 from services.performance_monitoring_service import PerformanceMonitoringService
@@ -36,6 +41,10 @@ class ServiceContainer:
 
     Responsible for creating and registering
     shared service instances used by the application.
+
+    Lifecycle:
+        shutdown() releases resources held by services that implement
+        a close() method.  Idempotent — safe to call multiple times.
     """
 
     def __init__(self):
@@ -43,45 +52,17 @@ class ServiceContainer:
 
         self._services = {}
 
+        self._initialized = False
+
         self._initialize_services()
 
+        self._initialized = True
+
+    @property
+    def is_initialized(self) -> bool:
+        return self._initialized
+
     def _initialize_services(self):
-        # -----------------------------
-        # Code Writer
-        # -----------------------------
-
-        self.register(
-            "code_writer",
-            CodeWriter(),
-        )
-
-        # -----------------------------
-        # Python Runner
-        # -----------------------------
-
-        self.register(
-            "python_runner",
-            PythonRunner(),
-        )
-
-        # -----------------------------
-        # File Tools
-        # -----------------------------
-
-        self.register(
-            "file_tools",
-            FileTools(),
-        )
-
-        # -----------------------------
-        # Text Editor
-        # -----------------------------
-
-        self.register(
-            "text_editor",
-            TextEditor(),
-        )
-
         # -----------------------------
         # Project Manager
         # -----------------------------
@@ -95,36 +76,62 @@ class ServiceContainer:
         # Cloud AI Service
         # -----------------------------
 
-        self.register(
-            "cloud_ai_service",
-            CloudAIService(),
-        )
+        cloud_ai = CloudAIService()
+        cloud_ai.register_provider("openai", OpenAIProvider())
+        cloud_ai.register_provider("gemini", GeminiProvider())
+        self.register("cloud_ai_service", cloud_ai)
 
         # -----------------------------
         # Intelligence and planning services
         # -----------------------------
 
-        self.register("research_service", ResearchService())
+        self.register("research_service", ResearchService([OpenSERPSearchProvider()]))
         self.register("analysis_service", AnalysisService())
         self.register("workflow_service", WorkflowService())
-        self.register("content_service", ContentService())
+
+        content_generator = CloudAIContentGenerator(
+            cloud_ai_service=cloud_ai,
+            model="gpt-4o-mini",
+        )
+        self.register("content_service", ContentService(content_generator))
         self.register("digital_asset_service", DigitalAssetService())
         self.register("product_service", ProductService())
         self.register("policy_service", PolicyService())
-        self.register("persona_service", PersonaService())
-        self.register("affiliate_identity_service", AffiliateIdentityService())
 
         # -----------------------------
         # Production and computer-operation services
         # -----------------------------
 
-        self.register("video_production_service", VideoProductionService())
-        self.register("audio_service", AudioService())
+        self.register(
+            "video_production_service",
+            VideoProductionService(
+                generator=GeminiVideoProvider(),
+                renderer=FFmpegVideoRenderer(),
+            ),
+        )
+        self.register(
+            "audio_service",
+            AudioService(
+                stt_provider=GeminiSTTProvider(),
+                tts_provider=GeminiTTSProvider(),
+            ),
+        )
         self.register("media_pipeline_service", MediaPipelineService())
-        self.register("browser_service", BrowserService())
+        search_provider = OpenSERPSearchProvider()
+        self.register(
+            "browser_service",
+            BrowserService(SearchBrowserAdapter(search_provider)),
+        )
         self.register(
             "computer_service",
             ComputerService(permitted=False),
+        )
+        self.register(
+            "image_service",
+            ImageService(
+                generator=GeminiImageProvider(),
+                processor=LocalImageProvider(),
+            ),
         )
         self.register("publishing_service", PublishingService())
         self.register(
@@ -157,3 +164,31 @@ class ServiceContainer:
 
     def get(self, service_name: str):
         return self._services.get(service_name)
+
+    def shutdown(self) -> None:
+        """Release resources held by services.
+
+        Iterates registered services in reverse registration order.
+        Calls close() on services that implement it.
+        Failures are logged but never propagated.
+        Idempotent — safe to call repeatedly.
+        """
+        if not self._initialized:
+            return
+
+        from core.logger import Logger
+
+        for name in reversed(list(self._services.keys())):
+            service = self._services.get(name)
+            if service is None:
+                continue
+            closer = getattr(service, "close", None)
+            if callable(closer):
+                try:
+                    closer()
+                except Exception as exc:
+                    Logger.warning(
+                        f"Cleanup failed for {name}: {exc}"
+                    )
+
+        self._initialized = False

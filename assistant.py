@@ -24,7 +24,10 @@ def main():
 
     master = MasterAgent()
 
-    master.start()
+    try:
+        master.start()
+    finally:
+        master.shutdown()
 
 
 if __name__ == "__main__":

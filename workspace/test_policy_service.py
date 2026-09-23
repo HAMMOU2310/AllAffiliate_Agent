@@ -59,5 +59,96 @@ class PolicyServiceTests(unittest.TestCase):
         self.assertNotIn("private detail", repr(errored))
 
 
+class PolicyServiceEdgeCaseTests(unittest.TestCase):
+    def test_non_callable_evaluator_fails(self):
+        result = PolicyService("not_callable").evaluate({"title": "asset"})
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Policy evaluator is invalid.")
+
+    def test_evaluator_returns_non_result_fails(self):
+        result = PolicyService(FakeEvaluator(result="not_a_result")).evaluate({"title": "asset"})
+        self.assertFalse(result.success)
+        self.assertEqual(result.message, "Policy evaluator failed.")
+
+    def test_evaluator_returns_non_dict_data_fails(self):
+        result = PolicyService(FakeEvaluator(Result.ok(data="string_data"))).evaluate({"title": "asset"})
+        self.assertFalse(result.success)
+        self.assertIn("malformed", result.message.lower())
+
+    def test_empty_asset_fails(self):
+        result = PolicyService(FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": ["r"]}))).evaluate({})
+        self.assertFalse(result.success)
+
+    def test_non_dict_asset_fails(self):
+        result = PolicyService(FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": ["r"]}))).evaluate("string")
+        self.assertFalse(result.success)
+
+    def test_case_insensitive_decision(self):
+        for decision in ("allowed", "Allowed", "ALLOWED"):
+            evaluator = FakeEvaluator(Result.ok(data={"decision": decision, "reasons": ["r"]}))
+            result = PolicyService(evaluator).evaluate({"title": "a"})
+            self.assertTrue(result.success, f"Failed for decision: {decision}")
+            self.assertEqual(result.data["decision"], decision.upper())
+
+    def test_empty_reasons_list_is_valid(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": []}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertTrue(result.success)
+        self.assertEqual(result.data["reasons"], [])
+
+    def test_non_list_reasons_fails(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": "string"}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertFalse(result.success)
+
+    def test_reasons_with_non_string_items_fails(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": [123]}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertFalse(result.success)
+
+    def test_reasons_with_empty_string_fails(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": ["  "]}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertFalse(result.success)
+
+    def test_reasons_stripped_in_output(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": ["  reason  "]}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertTrue(result.success)
+        self.assertEqual(result.data["reasons"], ["reason"])
+
+    def test_publishable_true_only_for_allowed(self):
+        for decision, expected in (("ALLOWED", True), ("BLOCKED", False), ("REVIEW_REQUIRED", False)):
+            evaluator = FakeEvaluator(Result.ok(data={"decision": decision, "reasons": ["r"]}))
+            result = PolicyService(evaluator).evaluate({"title": "a"})
+            self.assertEqual(result.data["publishable"], expected)
+
+    def test_metadata_contains_decision(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": ["r"]}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertEqual(result.metadata["decision"], "ALLOWED")
+
+    def test_asset_passed_to_evaluator(self):
+        captured = []
+        class CapturingEvaluator:
+            def evaluate(self, asset):
+                captured.append(dict(asset))
+                return Result.ok(data={"decision": "ALLOWED", "reasons": ["r"]})
+        asset = {"title": "test"}
+        PolicyService(CapturingEvaluator()).evaluate(asset)
+        self.assertEqual(captured[0]["title"], "test")
+
+    def test_asset_is_copied_not_mutated(self):
+        asset = {"title": "original"}
+        PolicyService(FakeEvaluator(Result.ok(data={"decision": "ALLOWED", "reasons": ["r"]}))).evaluate(asset)
+        self.assertEqual(asset["title"], "original")
+
+    def test_unknown_decision_fails(self):
+        evaluator = FakeEvaluator(Result.ok(data={"decision": "UNKNOWN", "reasons": ["r"]}))
+        result = PolicyService(evaluator).evaluate({"title": "a"})
+        self.assertFalse(result.success)
+        self.assertIn("decision", result.message.lower())
+
+
 if __name__ == "__main__":
     unittest.main()

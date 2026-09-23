@@ -103,6 +103,39 @@ class FileTools:
                 errors=[str(ex)],
             )
 
+    def append_text(
+        self,
+        path: str | Path,
+        content: str,
+        encoding: str = "utf-8",
+    ) -> Result:
+
+        try:
+            path = Path(path)
+
+            path.parent.mkdir(
+                parents=True,
+                exist_ok=True,
+            )
+
+            with open(path, "a", encoding=encoding) as f:
+                f.write(content)
+
+            return Result.ok(
+                data=path,
+                message="File appended successfully.",
+                metadata={
+                    "path": str(path.resolve()),
+                    "size": path.stat().st_size,
+                },
+            )
+
+        except Exception as ex:
+            return Result.fail(
+                message="Failed to append to file.",
+                errors=[str(ex)],
+            )
+
     def delete(self, path: str | Path) -> Result:
 
         try:
@@ -191,13 +224,22 @@ class FileTools:
     def list_files(
         self,
         directory: str | Path,
-        pattern: str = "*",
     ) -> Result:
 
         try:
             directory = Path(directory)
 
-            files = list(directory.glob(pattern))
+            if not directory.exists():
+                return Result.fail(
+                    message="Directory does not exist.",
+                    errors=[str(directory)],
+                )
+
+            files = [
+                item.name
+                for item in directory.iterdir()
+                if item.is_file()
+            ]
 
             return Result.ok(
                 data=files,

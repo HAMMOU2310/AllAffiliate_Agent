@@ -1,4 +1,4 @@
-"""Provider-neutral workflow planning boundary for v0.8."""
+"""Provider-neutral workflow planning and execution boundary."""
 
 from __future__ import annotations
 
@@ -16,12 +16,22 @@ class WorkflowPlanner(Protocol):
 
 
 class WorkflowService:
-    """Validate ordered plans without executing their steps."""
+    """Validate and execute ordered workflows.
+
+    Planning: validates plan structure via an injected WorkflowPlanner.
+    Execution: runs valid steps sequentially through a TaskRouter,
+    collecting per-step Results and returning an aggregate Result.
+    """
 
     _STATUSES = {"PENDING", "READY", "BLOCKED", "COMPLETED"}
 
-    def __init__(self, planner: WorkflowPlanner | None = None) -> None:
+    def __init__(self, planner: WorkflowPlanner | None = None, router: Any | None = None) -> None:
         self._planner = planner
+        self._router = router
+
+    # ------------------------------------------------------------------
+    # Planning (unchanged public API)
+    # ------------------------------------------------------------------
 
     def plan(
         self,
@@ -61,6 +71,139 @@ class WorkflowService:
                 "step_count": len(steps),
             },
         )
+
+    # ------------------------------------------------------------------
+    # Execution
+    # ------------------------------------------------------------------
+
+    def execute(
+        self,
+        steps: list[dict[str, Any]],
+        context: dict[str, Any] | None = None,
+        stop_on_failure: bool = True,
+    ) -> Result:
+        """Execute a validated workflow sequentially.
+
+        Each step must contain:
+            id (str)           — unique step identifier
+            task_type (str)    — target agent task type
+            command (str)      — command string for the task
+            data (dict)        — optional task data payload
+
+        Args:
+            steps: Normalized workflow steps.
+            context: Optional shared context passed to every step's data.
+            stop_on_failure: If True, halt on first failure.
+
+        Returns:
+            Result with aggregated execution data.
+        """
+        if not isinstance(steps, list) or not steps:
+            return Result.fail("Workflow has no steps to execute.")
+
+        if self._router is None:
+            return Result.fail("No task router registered for workflow execution.")
+
+        validation_error = self._validate_executable_steps(steps)
+        if validation_error:
+            return Result.fail(validation_error)
+
+        step_results: list[dict[str, Any]] = []
+        completed = 0
+        failed = 0
+        failed_step_id = None
+
+        for step in steps:
+            step_id = step["id"]
+            task_type = step["task_type"]
+            command = step.get("command", "")
+            step_data = dict(step.get("data", {}))
+
+            if context:
+                step_data["context"] = context
+
+            from core.task import Task
+
+            task = Task(
+                task_type=task_type,
+                command=command,
+                data=step_data,
+            )
+
+            try:
+                result = self._router.route(task)
+            except Exception as exc:
+                result = Result.fail(
+                    message=f"Step execution raised an exception: {exc}",
+                    errors=[str(exc)],
+                )
+
+            step_record = {
+                "id": step_id,
+                "task_type": task_type,
+                "success": result.success,
+                "message": result.message,
+                "data": result.data,
+                "errors": result.errors,
+            }
+            step_results.append(step_record)
+
+            if result.success:
+                completed += 1
+            else:
+                failed += 1
+                if failed_step_id is None:
+                    failed_step_id = step_id
+                if stop_on_failure:
+                    break
+
+        total = len(steps)
+        all_succeeded = failed == 0
+
+        if all_succeeded:
+            message = f"Workflow completed: {completed}/{total} steps succeeded."
+        elif stop_on_failure:
+            message = f"Workflow halted at step '{failed_step_id}': {completed} completed, {failed} failed."
+        else:
+            message = f"Workflow finished: {completed}/{total} succeeded, {failed} failed."
+
+        return Result.ok(
+            data={
+                "steps": step_results,
+                "completed": completed,
+                "failed": failed,
+                "total": total,
+                "all_succeeded": all_succeeded,
+                "stop_on_failure": stop_on_failure,
+            },
+            message=message,
+        )
+
+    # ------------------------------------------------------------------
+    # Validation
+    # ------------------------------------------------------------------
+
+    def _validate_executable_steps(self, steps: list[dict[str, Any]]) -> str | None:
+        """Return an error message if steps are invalid for execution, else None."""
+        seen_ids: set[str] = set()
+        for step in steps:
+            if not isinstance(step, Mapping):
+                return "Workflow step is not a valid mapping."
+
+            step_id = step.get("id")
+            if not isinstance(step_id, str) or not step_id.strip():
+                return "Workflow step missing a valid id."
+            step_id = step_id.strip()
+
+            if step_id in seen_ids:
+                return f"Duplicate workflow step id: '{step_id}'."
+            seen_ids.add(step_id)
+
+            task_type = step.get("task_type")
+            if not isinstance(task_type, str) or not task_type.strip():
+                return f"Step '{step_id}' missing a valid task_type."
+
+        return None
 
     @classmethod
     def _normalize_steps(cls, steps: Any) -> list[dict[str, Any]] | None:

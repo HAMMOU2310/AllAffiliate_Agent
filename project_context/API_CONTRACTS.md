@@ -2230,3 +2230,821 @@ Agents remain preferred when a capability needs multi-step orchestration.
 Required tests cover construction, mapping, successful service Result
 propagation, invalid/missing payloads, missing services, service failures,
 and registry integration.
+
+---
+
+# External Integration Phase
+
+## External Integration #1 — OpenAI Cloud Runtime
+### Integration Identity
+
+```text
+Component: OpenAI Cloud Runtime Integration
+Provider: OpenAI
+Phase: EXTERNAL INTEGRATION PHASE
+Status: INTEGRATION READY
+Role: OPTIONAL CLOUD AI PROVIDER
+Real Verification: NOT VERIFIED
+```
+
+### Purpose
+
+تمكين AllAffiliate_Agent من استخدام OpenAI Cloud API من خلال
+`OpenAIProvider` و`CloudAIService` مع الحفاظ على العقود العامة
+وحدود الطبقات الحالية.
+
+هذا التكامل لا يغيّر `CloudAIProvider` ولا `CloudAIService` ولا
+`ContentService`.
+
+### Canonical Boundary
+
+```text
+ContentService
+      ↓
+ContentGenerator
+      ↓
+CloudAIService
+      ↓
+OpenAIProvider
+      ↓
+OpenAI SDK
+      ↓
+OpenAI Cloud API
+```
+
+### Canonical Provider
+
+```text
+providers/openai_provider.py
+```
+
+`OpenAIProvider` هو الحد الرسمي لتنفيذ OpenAI-specific behavior.
+
+### Public Construction Contract
+
+```python
+OpenAIProvider() -> OpenAIProvider
+```
+
+لا يحتوي الـ constructor على إعدادات عامة خاصة بمزود OpenAI.
+
+بيانات الاعتماد، عميل SDK، وتفاصيل تنفيذ OpenAI تبقى داخل حدود
+المزود.
+
+### Credential Contract
+
+يستخدم المزود متغير البيئة:
+
+```text
+OPENAI_API_KEY
+```
+
+قواعد الاعتماد:
+
+* لا يجوز وضع المفتاح داخل الكود.
+* لا يجوز وضع المفتاح داخل ملفات العقود.
+* لا يجوز وضع المفتاح داخل الاختبارات.
+* لا يجوز تسجيل المفتاح في logs.
+* لا يجوز إرجاع المفتاح داخل `Result.data`.
+* لا يجوز إرجاع المفتاح داخل `Result.errors`.
+* لا يجوز إرجاع المفتاح داخل `Result.metadata`.
+
+عند غياب المفتاح يجب أن يفشل المزود بأمان.
+
+### SDK Boundary
+
+تفاصيل OpenAI SDK يجب أن تبقى داخل:
+
+```text
+providers/openai_provider.py
+```
+
+ولا يجوز للخدمات العامة استدعاء OpenAI SDK مباشرة.
+
+### Public Generation Contract
+
+يجب أن يطبق المزود العقد العام الحالي دون تغيير:
+
+```python
+generate(
+    prompt: str,
+    model: str | None = None,
+    parameters: dict | None = None,
+) -> Result
+```
+
+لا يجوز إضافة OpenAI-specific arguments إلى العقد العام.
+
+### Result Contract
+
+عند نجاح التوليد:
+
+```python
+Result.ok(...)
+```
+
+وتكون الاستجابة في:
+
+```python
+Result.data
+```
+
+وعند الفشل:
+
+```python
+Result.fail(...)
+```
+
+لا يجوز تسريب الأسرار أو بيانات الاعتماد.
+
+### Failure Behavior
+
+يجب تحويل الحالات التالية إلى `Result.fail(...)`:
+
+* `OPENAI_API_KEY` مفقود.
+* بيانات اعتماد غير صالحة.
+* prompt غير صالح.
+* model غير صالح أو مفقود.
+* parameters غير صالحة.
+* SDK failure.
+* API failure.
+* quota failure.
+* rate-limit failure.
+* invalid provider response.
+* unexpected provider exception.
+
+### CloudAIService Relationship
+
+يبقى العقد العام لـ `CloudAIService` دون تغيير:
+
+```python
+register_provider(name, provider) -> Result
+get_provider(name) -> Result
+remove_provider(name) -> Result
+list_providers() -> Result
+generate(prompt, provider=None, model=None, parameters=None) -> Result
+```
+
+العلاقة:
+
+```text
+CloudAIService
+      ↓
+CloudAIProvider
+      ↓
+OpenAIProvider
+      ↓
+OpenAI SDK
+      ↓
+OpenAI Cloud API
+```
+
+`CloudAIService` مسؤول عن التسجيل والبحث والاختيار والاستدعاء
+والتعامل مع `Result`.
+
+`OpenAIProvider` لا يختار المزود ولا يدير الـ Router.
+
+### Content Integration Boundary
+
+يبقى:
+
+```text
+ContentService
+      ↓
+ContentGenerator
+      ↓
+CloudAIService
+      ↓
+OpenAIProvider
+```
+
+ولا يجوز لـ `ContentService` استيراد OpenAI SDK مباشرة.
+
+### Required Tests
+
+يجب أن تغطي الاختبارات:
+
+* construction.
+* successful generation.
+* model forwarding.
+* parameter forwarding.
+* invalid prompt.
+* invalid model.
+* invalid parameters.
+* missing credentials.
+* invalid credentials.
+* SDK failure.
+* API failure.
+* quota/rate-limit failure.
+* invalid response.
+* secret redaction.
+* `Result.ok(...)` compatibility.
+* `Result.fail(...)` compatibility.
+* compatibility with unchanged `CloudAIProvider`.
+* registration through `CloudAIService`.
+* provider lookup.
+* provider selection.
+* provider invocation.
+
+### Real Smoke Test
+
+يتطلب التحقق التشغيلي الحقيقي:
+
+```text
+Environment:
+OPENAI_API_KEY = PRESENT
+
+Operation:
+Generate one short sentence about renewable energy.
+
+Expected:
+Result.success == True
+Result.data contains generated text
+```
+
+### Current Real Verification Evidence
+
+تم تنفيذ اختبار حقيقي إلى OpenAI Cloud API.
+
+الأدلة المثبتة:
+
+```text
+OPENAI_API_KEY:
+PRESENT
+
+OpenAI Client:
+INITIALIZED
+
+Models API:
+ACCESSIBLE
+
+Generation Request:
+REJECTED
+```
+
+سبب الرفض:
+
+```text
+HTTP 429
+Error Type: RateLimitError
+Error Code: insufficient_quota
+```
+
+وبالتالي تم إثبات إمكانية الوصول إلى OpenAI API، ولكن لم يتم إثبات
+توليد استجابة حقيقية بنجاح.
+
+### Operational Verification Status
+
+لا يجوز تصنيف OpenAI على أنه:
+
+```text
+OPERATIONALLY VERIFIED
+```
+
+حتى ينجح طلب توليد حقيقي.
+
+الحالة الحالية:
+
+```text
+Status: INTEGRATION READY
+Real Verification: NOT VERIFIED
+Reason: Real generation blocked by insufficient API quota
+```
+
+يجب عدم اعتبار خطأ `insufficient_quota` عيبًا في المعمارية أو
+في `OpenAIProvider` ما لم يظهر دليل آخر على خلل برمجي.
+
+### Scope Boundaries
+
+هذا التكامل لا يشمل:
+
+* automatic paid-tier activation.
+* automatic billing.
+* automatic quota bypass.
+* provider failover.
+* streaming contract.
+* multimodal contract.
+* tool-calling contract.
+* provider factory.
+* تغييرات في `CloudAIProvider`.
+* تغييرات في العقد العام لـ `CloudAIService`.
+* credential management system.
+
+أي توسعة لهذه القدرات تحتاج Contract منفصلًا ومعتمدًا.
+
+### Definition of Done
+
+يعتبر External Integration #1 مكتملًا تشغيليًا فقط عند تحقق:
+
+* `OpenAIProvider` implemented.
+* OpenAI SDK available.
+* `OPENAI_API_KEY` configured externally.
+* focused tests pass.
+* regression remains passing.
+* compilation passes.
+* secret redaction passes.
+* generic Cloud AI contract remains unchanged.
+* real generation request succeeds.
+* operational status is updated truthfully.
+* `PROJECT_STATE.md` is synchronized.
+* `CHANGELOG.md` is synchronized.
+
+### Approval State
+
+```text
+External Integration #1
+Provider: OpenAI
+Role: OPTIONAL CLOUD AI PROVIDER
+Canonical Path: providers/openai_provider.py
+Contract: APPROVED
+Implementation: COMPLETE
+Real Verification: NOT VERIFIED
+Current Status: INTEGRATION READY
+Reason: insufficient_quota
+```
+
+---
+
+## External Integration #2 — Google Gemini Cloud Runtime
+
+## Integration Identity
+
+```text
+Component: Google Gemini Cloud Runtime Integration
+Provider: Google Gemini
+Phase: EXTERNAL INTEGRATION PHASE
+Status: Contract Approved — Implementation Pending
+Role: PRIMARY FREE CLOUD AI PROVIDER
+```
+
+## Purpose
+
+تمكين AllAffiliate_Agent من استخدام Google Gemini Cloud API كمسار Cloud AI
+مجاني أساسي عند توفر Free Tier، مع الحفاظ الكامل على العقد العام الحالي
+`CloudAIProvider` وعدم ربط بقية المشروع بتفاصيل Gemini.
+
+هذا التكامل مخصص في المرحلة الأولى للمهام النصية التي تحتاج إلى Cloud AI،
+خصوصًا:
+
+* Content Generation
+* Analysis
+* Planning
+* Reasoning
+
+ويجب ألا يؤدي التكامل إلى تغيير العقود العامة للخدمات الحالية.
+
+## Free-Tier Policy
+
+يعتمد التكامل في مرحلته الأولى على النماذج والحصص المتاحة ضمن
+Gemini API Free Tier.
+
+Free Tier ليس مضمونًا ليكون بلا حدود، وتخضع حدود الاستخدام والنماذج
+المتاحة لسياسات Google الحالية.
+
+لا يجوز للتكامل تفعيل فوترة مدفوعة أو تجاوز حدود Free Tier تلقائيًا.
+
+عند انتهاء الحصة المجانية أو رفض الطلب بسبب حدود الاستخدام أو الفوترة،
+يجب إعادة `Result.fail(...)` وعدم تنفيذ أي انتقال تلقائي إلى Tier مدفوع.
+
+## Canonical Path
+
+```text
+providers/gemini_provider.py
+```
+
+هذا هو المسار الرسمي الوحيد لتنفيذ Google Gemini Cloud Runtime.
+
+## Responsibility
+
+`GeminiProvider` مسؤول فقط عن تكييف Google Gemini Cloud API مع العقد العام:
+
+```python
+CloudAIProvider
+```
+
+وتشمل مسؤوليته:
+
+* إنشاء عميل Gemini.
+* قراءة بيانات الاعتماد من مصدر البيئة الخاص بالمزود.
+* تحويل الطلب العام إلى صيغة Gemini.
+* تنفيذ طلب Cloud AI.
+* تحويل استجابة Gemini إلى `Result`.
+* تحويل أخطاء Gemini وSDK إلى `Result.fail(...)`.
+* منع تسرب الأسرار في الأخطاء والرسائل والبيانات الوصفية.
+
+ولا يجوز له تعديل:
+
+```text
+Core
+Agents
+Router
+Memory
+CloudAIService
+ServiceContainer
+ContentService
+```
+
+## Public Construction Contract
+
+```python
+GeminiProvider() -> GeminiProvider
+```
+
+لا يعرض الـ constructor أي إعدادات عامة خاصة بـ Gemini.
+
+إعدادات Gemini الخاصة، وبيانات الاعتماد، وعميل SDK، وتفاصيل الاتصال
+تبقى داخل حدود المزود.
+
+## Credential Contract
+
+يستخدم التكامل متغير البيئة الرسمي:
+
+```text
+GEMINI_API_KEY
+```
+
+قواعد الاعتماد:
+
+* لا يجوز وضع API key داخل الكود.
+* لا يجوز وضع API key داخل `API_CONTRACTS.md`.
+* لا يجوز وضع API key داخل ملفات الاختبارات.
+* لا يجوز تسجيل API key في logs.
+* لا يجوز إرجاع API key داخل `Result.data`.
+* لا يجوز إرجاع API key داخل `Result.errors`.
+* لا يجوز إرجاع API key داخل `Result.metadata`.
+
+عند غياب `GEMINI_API_KEY` يجب أن يفشل المزود بشكل آمن.
+
+## SDK Boundary
+
+الاعتماد الخارجي المسموح به:
+
+```text
+google-genai
+```
+
+ويجب أن تبقى جميع تفاصيل SDK داخل:
+
+```text
+providers/gemini_provider.py
+```
+
+لا يجوز للخدمات العامة استيراد:
+
+```text
+google.genai
+google-genai
+```
+
+مباشرة.
+
+## Model Contract
+
+النموذج الأول المعتمد للتكامل المجاني هو:
+
+```text
+gemini-2.5-flash-lite
+```
+
+ويُستخدم كإعداد افتراضي داخل حدود المزود أو طبقة التوصيل الخاصة به،
+دون توسيع العقد العام لـ `CloudAIProvider`.
+
+يمكن لاحقًا تغيير النموذج أو إضافة نماذج أخرى ضمن حدود عقد منفصل أو
+تحديث معتمد، دون تعديل `CloudAIProvider`.
+
+## Public Generation Contract
+
+يجب أن يطبق المزود العقد العام الحالي دون أي تغيير:
+
+```python
+generate(
+    prompt: str,
+    model: str | None = None,
+    parameters: dict | None = None,
+) -> Result
+```
+
+لا يجوز إضافة Gemini-specific arguments إلى العقد العام.
+
+## Request Translation
+
+يقوم `GeminiProvider` بتحويل:
+
+```text
+prompt
+model
+parameters
+```
+
+إلى طلب Gemini مناسب داخل حدود المزود فقط.
+
+لا يجوز للخدمات الأخرى معرفة:
+
+* Gemini request objects
+* Gemini response objects
+* SDK-specific message structures
+* Gemini client objects
+* Gemini-specific exceptions
+
+## Result Return Contract
+
+عند نجاح طلب Gemini:
+
+```python
+Result.ok(...)
+```
+
+وتكون الاستجابة المولدة داخل:
+
+```python
+Result.data
+```
+
+ويجب أن يكون الناتج provider-neutral قدر الإمكان.
+
+عند الفشل:
+
+```python
+Result.fail(...)
+```
+
+ولا يجوز تسريب:
+
+* API keys
+* authentication headers
+* raw secret values
+* internal credential data
+
+## Failure Behavior
+
+يجب على `GeminiProvider` تحويل الحالات التالية إلى `Result.fail(...)`:
+
+* `GEMINI_API_KEY` مفقود.
+* بيانات الاعتماد غير صالحة.
+* prompt غير صالح.
+* model غير صالح.
+* parameters غير صالحة.
+* SDK failure.
+* API failure.
+* quota/rate-limit failure.
+* blocked request.
+* invalid Gemini response.
+* unexpected provider exception.
+
+عند انتهاء Free Tier أو حدوث مشكلة quota يجب أن يفشل الطلب بأمان.
+
+لا يجوز إنشاء فوترة مدفوعة أو تجاوز Free Tier تلقائيًا.
+
+## CloudAIService Relationship
+
+العقد العام لـ `CloudAIService` يبقى دون تغيير:
+
+```python
+register_provider(name, provider) -> Result
+get_provider(name) -> Result
+remove_provider(name) -> Result
+list_providers() -> Result
+generate(prompt, provider=None, model=None, parameters=None) -> Result
+```
+
+العلاقة:
+
+```text
+CloudAIService
+      ↓
+CloudAIProvider
+      ↓
+GeminiProvider
+      ↓
+google-genai
+      ↓
+Google Gemini Cloud API
+```
+
+`CloudAIService` مسؤول عن:
+
+* تسجيل المزود.
+* البحث عن المزود.
+* اختيار المزود.
+* استدعاء المزود.
+* التعامل مع `Result`.
+
+`GeminiProvider` لا يختار المزود ولا يسجل نفسه ولا يتعامل مع Router.
+
+## ContentService Integration Boundary
+
+يجب أن يبقى:
+
+```text
+ContentService
+      ↓
+ContentGenerator
+      ↓
+CloudAIService
+      ↓
+GeminiProvider
+```
+
+ويجب ألا يتعامل `ContentService` مباشرة مع Gemini SDK.
+
+الـ `ContentGenerator` contract يبقى دون تغيير:
+
+```python
+generate(
+    brief: str,
+    persona: dict | None = None,
+    format: str | None = None,
+) -> Result
+```
+
+## Direct Dependencies
+
+الاعتماديات المباشرة المسموح بها:
+
+```text
+Result
+CloudAIProvider
+google-genai
+GEMINI_API_KEY
+```
+
+ولا يجوز للمزود الاعتماد على:
+
+```text
+Agents
+Router
+Memory
+Publishing
+BrowserService
+ComputerService
+```
+
+## Required Tests
+
+يجب أن تغطي اختبارات `GeminiProvider`:
+
+* `GeminiProvider()` construction.
+* successful generation.
+* model forwarding.
+* parameter forwarding.
+* invalid prompt.
+* invalid model.
+* invalid parameters.
+* missing API key.
+* invalid credentials.
+* SDK failure.
+* API failure.
+* quota/rate-limit failure.
+* invalid response.
+* secret redaction.
+* `Result.ok(...)` compatibility.
+* `Result.fail(...)` compatibility.
+* compatibility with unchanged `CloudAIProvider`.
+* registration through `CloudAIService`.
+* provider lookup.
+* provider selection.
+* provider invocation.
+
+## Real Smoke Test Contract
+
+بعد تنفيذ المزود، يجب إجراء اختبار حقيقي مستقل باستخدام API key صالح:
+
+```text
+Environment:
+GEMINI_API_KEY = PRESENT
+
+Model:
+gemini-2.5-flash-lite
+
+Operation:
+Generate one short sentence about renewable energy.
+
+Expected:
+Result.success == True
+Result.data contains generated text
+```
+
+ويجب تسجيل نتيجة الاختبار بوضوح.
+
+## Operational Verification Rules
+
+لا يُعتبر Gemini:
+
+```text
+OPERATIONALLY VERIFIED
+```
+
+إلا بعد نجاح طلب حقيقي إلى Gemini Cloud API.
+
+نجاح:
+
+* الاستيراد.
+* إنشاء العميل.
+* الاختبارات الوهمية.
+* الاختبارات المحلية.
+* compilation.
+
+لا يكفي وحده لإثبات الاتصال التشغيلي الحقيقي.
+
+قبل نجاح الـ Real Smoke Test يبقى الوضع:
+
+```text
+Status: INTEGRATION READY
+```
+
+بعد نجاح الطلب الحقيقي يصبح:
+
+```text
+Status: OPERATIONALLY VERIFIED
+```
+
+مع تسجيل التاريخ ونتيجة الاختبار في:
+
+```text
+PROJECT_STATE.md
+CHANGELOG.md
+```
+
+## Scope Boundaries
+
+هذا التكامل لا يشمل في مرحلته الأولى:
+
+* Gemini multimodal workflows.
+* Gemini image generation.
+* Gemini audio generation.
+* Gemini video generation.
+* Google Search grounding.
+* Google Maps grounding.
+* tool calling.
+* streaming.
+* batching.
+* automatic model failover.
+* automatic paid-tier activation.
+* credential management system.
+* provider factory.
+* changes to `CloudAIProvider`.
+* changes to `CloudAIService` generic contract.
+
+أي من هذه القدرات يحتاج Contract منفصلًا قبل التنفيذ.
+
+## Architecture Preservation
+
+يجب الحفاظ على:
+
+```text
+User
+  ↓
+CommandParser
+  ↓
+Task
+  ↓
+TaskRouter
+  ↓
+Agent
+  ↓
+CommandDispatcher
+  ↓
+Service
+  ↓
+CloudAIService
+  ↓
+GeminiProvider
+  ↓
+Google Gemini API
+  ↓
+Result
+```
+
+ولا يجوز اختصار الطبقات أو ربط الخدمات مباشرة بـ Gemini SDK.
+
+## Definition of Done
+
+يعتبر External Integration #2 مكتملًا فقط عند تحقق جميع الشروط:
+
+* `GeminiProvider` implemented.
+* `google-genai` installed.
+* `GEMINI_API_KEY` configured externally.
+* focused tests pass.
+* existing regression tests remain passing.
+* compilation passes.
+* secret redaction passes.
+* generic `CloudAIProvider` contract remains unchanged.
+* `CloudAIService` generic contract remains unchanged.
+* Content integration remains provider-neutral.
+* real Gemini API request succeeds.
+* integration status is truthfully updated.
+* `PROJECT_STATE.md` is synchronized.
+* `CHANGELOG.md` is synchronized.
+
+## Approval State
+
+```text
+External Integration #2
+Provider: Google Gemini
+Role: PRIMARY FREE CLOUD AI PROVIDER
+Canonical Path: providers/gemini_provider.py
+Contract: APPROVED
+Implementation: PENDING
+Real Verification: PENDING
+Current Status: INTEGRATION READY
+```

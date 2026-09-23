@@ -2,9 +2,14 @@
 
 # CHANGELOG
 
-## Current Release
+## Historical Baseline
 
-### v1.0 — Integrated Autonomous Digital Operations Platform
+The local project changelog was previously maintained at the v0.3 / Completed
+checkpoint. Historical entries must not override the current v1.0 state.
+
+---
+
+## v1.0 — Integrated Autonomous Digital Operations Platform
 
 **Date:** 2026-08-23
 
@@ -12,7 +17,8 @@
 
 ### Summary
 
-تم إغلاق مسار v1.0 محليًا بعد اكتمال مكونات المنصة الموثقة وإجراء التحقق المحلي للتكامل والانحدار والترجمة البرمجية والتشغيل.
+تم إكمال مسار v1.0 المحلي بعد تنفيذ مكونات المنصة الموثقة وإجراء التحقق
+المحلي للتكامل والانحدار والترجمة البرمجية والتشغيل.
 
 ### Added
 
@@ -62,31 +68,83 @@ Pytest:
 
 Test duration:
 2.25s
+---
+
+## v1.0 Official Local Closure — 2026-08-26
+
+**Date:** 2026-08-26
+
+**Status:** LOCAL V1.0 OFFICIALLY CLOSED
+
+### Summary
+
+تم إغلاق الإصدار v1.0 محليًا بشكل رسمي بعد استكمال تدقيق الإغلاق النهائي
+والتحقق من المعمارية والعقود والتكاملات المحلية والاختبارات والترجمة
+البرمجية وحالة المستودع.
+
+### Final Validation
+
+```text
+Python compilation:
+PASS
+
+Full regression:
+117 passed
+0 failed
+291 warnings
+
+v1.0 integration:
+5 passed
+
+OpenAIProvider unit tests (mocked):
+PASS
+
+Cloud AI Content Generator tests:
+23 passed
+
+ContentService tests:
+PASS
+
+Architecture audit:
+PASS
+
+Public contract audit:
+PASS
+
+Temporal video architecture:
+PASS
+
+Policy states:
+ALLOWED
+BLOCKED
+REVIEW_REQUIRED
+
+External runtime classification:
+INTEGRATION READY (OpenAI: unit-tested only; Gemini: operationally verified)
 ```
 
 ---
 
-### v1.0 Documentation Closure — 2026-08-26
+## v1.0 External Integration #2 — Google Gemini Cloud Runtime — 2026-08-29
 
-**Date:** 2026-08-26
+**Date:** 2026-08-29
 
-**Status:** Documentation Synchronization Complete
+**Status:** OPERATIONALLY VERIFIED — Real smoke test passed
 
 ### Summary
 
-تم تحديث توثيق المشروع لمراجعة الحالة الفعلية بعد التحقق المستقل من v1.0. تم تصحيح التعارضات بين الوثائق والكود الفعلي.
+تم تفعيل Google Gemini كمزود سحابي ثاني للذكاء الاصطناعي. تم التحقق من التشغيل الفعلي عبر Gemini API.
+
+### Added
+
+- `providers/gemini_provider.py`: Google Gemini provider implementing the provider-neutral CloudAIProvider contract.
+- `workspace/test_gemini_provider.py`: 22 unit tests for GeminiProvider.
+- GeminiProvider registration in ServiceContainer with explicit provider selection.
 
 ### Changed
 
-- PROJECT_STATE.md: Updated runtime version display to v1.0 (was incorrectly documented as 0.1);
-- PROJECT_STATE.md: Removed resolved Known Issue #1 (version display);
-- PROJECT_STATE.md: Updated Technical Debt list;
-- PROJECT_STATE.md: Updated Runtime Status section;
-- PROJECT_BLUEPRINT.md: Updated Memory Layer section to reflect implemented status;
-- API_CONTRACTS.md: Updated BrowserAgent status from Future to Implemented and locally validated;
-- API_CONTRACTS.md: Updated MemoryAgent status from Future to Implemented and locally validated;
-- PROJECT_HANDOFF.md: Added v1.0 Current Status Summary with clear phases;
-- .gitignore: Added myenv/ to exclusion list.
+- `core/service_container.py`: Added GeminiProvider import and registration as non-default provider.
+- OpenAI remains the default provider. Gemini is selectable via `provider="gemini"`.
 
 ### Validation
 
@@ -94,7 +152,105 @@ Test duration:
 Python compilation:
 PASS
 
-Pytest:
-94 passed
+GeminiProvider focused tests:
+22 passed
 0 failed
+
+Full regression:
+139 passed
+0 failed
+
+Real smoke test (gemini-2.5-flash-lite):
+PASS
+Result.data: Renewable energy harnesses natural, replenishable resources to power our future.
+```
+
+---
+
+## v1.0 Content Pipeline Integration Verification — 2026-08-29
+
+**Date:** 2026-08-29
+
+**Status:** OPERATIONALLY VERIFIED — Real end-to-end content generation succeeded
+
+### Summary
+
+تم التحقق من خط إنتاج المحتوى الكامل عبر المسار الحي: ContentService → CloudAIContentGenerator → CloudAIService → GeminiProvider → Gemini API.
+
+### Added
+
+- `workspace/test_content_generation_workflow.py`: Integration test validating the complete content-generation pipeline through real Gemini API.
+
+### Validation
+
+```text
+Python compilation:
+PASS
+
+Content pipeline integration tests:
+3 passed (real Gemini API calls)
+4 passed (validation tests)
+
+Full regression:
+146 passed
+0 failed
+
+Real pipeline smoke test (gemini-2.5-flash-lite):
+PASS
+Chain: ContentService → CloudAIContentGenerator → CloudAIService → GeminiProvider → Gemini API
+ContentService.create() returned validated draft with title, body, claims.
+```
+
+---
+
+## v1.0 Research Foundation — OpenSERP OSS — 2026-09-01
+
+**Date:** 2026-09-01
+
+**Status:** IMPLEMENTED — Unit/contract tests pass, integration test ready (requires local OpenSERP server)
+
+### Summary
+
+تم استبدال WebSearchProvider (Tavily) بـ OpenSERPSearchProvider باستخدام OpenSERP OSS. البحث теперь يعمل عبر خادم محلي بدون مفتاح API أو فواتير.
+
+### Added
+
+- `providers/openserp_search_provider.py`: OpenSERP OSS HTTP adapter implementing the ResearchSource protocol.
+- `workspace/test_openserp_search_provider.py`: 34 unit and contract tests for OpenSERPSearchProvider.
+- `workspace/test_research_integration.py`: 2 integration tests (requires local OpenSERP server at http://127.0.0.1:7000).
+
+### Changed
+
+- `core/service_container.py`: OpenSERPSearchProvider registered in ResearchService — ResearchService now uses OpenSERP OSS.
+- `.env`: Removed TAVILY_API_KEY, added OpenSERP configuration variables.
+
+### Removed
+
+- `providers/web_search_provider.py`: Tavily HTTP adapter (replaced by OpenSERPSearchProvider).
+- `workspace/test_web_search_provider.py`: Tavily unit tests (replaced by OpenSERP tests).
+- TAVILY_API_KEY from .env (no longer needed).
+
+### Supersedes
+
+- v1.0 Research Foundation — WebSearchProvider (Tavily) — 2026-08-30
+
+### Network Architecture
+
+```
+AllAffiliate_Agent → http://127.0.0.1:7000 → OpenSERP OSS → upstream internet/search engines
+```
+
+### Validation
+
+```text
+Python compilation:
+PASS
+
+OpenSERPSearchProvider unit tests:
+34 passed
+0 failed
+
+Full regression:
+all non-integration tests pass
+0 failures
 ```

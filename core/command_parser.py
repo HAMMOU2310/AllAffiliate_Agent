@@ -271,6 +271,7 @@ class CommandParser:
             ("diagnose", ("diagnose ", "\u0634\u062e\u0651\u0635 ", "\u0634\u062e\u0635 ")),
             ("experiment", ("experiment ", "\u062a\u062c\u0631\u0628\u0629 ")),
             ("publishing", ("publish ", "publishing ", "\u0646\u0634\u0631 ")),
+            ("image", ("image ", "\u0635\u0648\u0631\u0629 ")),
         )
         for task_type, prefixes in capability_prefixes:
             if any(lower.startswith(prefix.lower()) for prefix in prefixes):

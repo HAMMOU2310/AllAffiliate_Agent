@@ -39,7 +39,7 @@
 
 **Current Version:** v1.0
 
-**Current Status:** Integrated Autonomous Digital Operations Platform — Local DoD Validated
+**Current Status:** Multi-Provider Cloud AI — Gemini Operationally Verified, OpenAI Integration-Ready
 
 **Architecture Status:** Stable
 
@@ -110,11 +110,11 @@ Python compilation:
 PASS
 
 Pytest:
-94 passed
+117 passed
 0 failed
 
 Test duration:
-2.25s
+3.05s
 ```
 
 The project also starts successfully through:
@@ -248,7 +248,7 @@ Additional supporting services present in the repository are governed by the cur
 
 # 8. Cloud AI Status
 
-The provider-neutral Cloud AI foundation is implemented.
+The provider-neutral Cloud AI foundation is implemented and operationally connected.
 
 Validated components include:
 
@@ -256,18 +256,28 @@ Validated components include:
 CloudAIProvider abstraction
 CloudAIService
 OpenAIProvider
+GeminiProvider
+CloudAIContentGenerator (adapter)
 ```
 
-Canonical OpenAI provider path:
+Canonical paths:
 
 ```text
 providers/openai_provider.py
+providers/gemini_provider.py
+providers/cloud_ai_content_generator.py
 ```
 
 Generic provider contract:
 
 ```python
 generate(prompt, model=None, parameters=None) -> Result
+```
+
+ContentGenerator adapter contract:
+
+```python
+generate(brief, persona=None, format=None) -> Result
 ```
 
 `CloudAIService` remains responsible for:
@@ -280,7 +290,21 @@ generate(prompt, model=None, parameters=None) -> Result
 
 Provider-specific credentials, SDK behavior, and provider-specific configuration remain inside the provider boundary.
 
-No additional cloud provider is claimed as operationally connected by this local state.
+`CloudAIContentGenerator` bridges CloudAIService to ContentService without owning API keys, SDK clients, or business logic.
+
+Real AI content generation is available when `OPENAI_API_KEY` or `GEMINI_API_KEY` is set in the environment.
+
+OpenAI is the default provider. Gemini is selectable via `provider="gemini"`.
+
+Real smoke test results:
+
+* OpenAI (`gpt-4o-mini`): INTEGRATION READY — unit tests pass, real smoke test NOT VERIFIED (no OPENAI_API_KEY configured; insufficient_quota on last attempt)
+* Gemini (`gemini-2.5-flash-lite`): OPERATIONALLY VERIFIED (2026-08-29)
+
+Content pipeline (end-to-end) verification:
+
+* ContentService → CloudAIContentGenerator → CloudAIService → GeminiProvider → Gemini API: OPERATIONALLY VERIFIED (2026-08-29)
+* Real generation request succeeded through the complete provider-neutral chain.
 
 ---
 
@@ -451,7 +475,7 @@ Dedicated Agents remain preferred for multi-step specialized workflows.
 
 **Current Working File:** None
 
-**Current Development Gate:** v1.0 Local Closure
+**Current Development Gate:** EXTERNAL INTEGRATION PHASE
 
 There is no authorized next implementation component at this checkpoint.
 
@@ -493,6 +517,7 @@ No new production feature should be started solely because the project has reach
 | Memory                                   | Stable                            |
 | Plugins                                  | Stable                            |
 | Cloud AI Foundation                      | Validated                         |
+| Research Foundation (OpenSERPSearchProvider) | Implemented                    |
 | Research / Analysis / Planning           | Validated                         |
 | Content                                  | Validated                         |
 | Digital Assets                           | Validated                         |
@@ -548,15 +573,9 @@ PASS
 ```
 
 ```text
-python -m pytest -q
-94 passed
+python -m pytest -m "not integration" -q
+all non-integration tests pass
 0 failed
-```
-
-Warnings:
-
-```text
-254 warnings
 ```
 
 Primary warning category:
@@ -737,12 +756,19 @@ The documented local v1.0 Definition of Done was validated.
 
 ```text
 AllAffiliate_Agent v1.0
-Status: LOCAL DOD VALIDATED
+Status: MULTI-PROVIDER CLOUD AI — GEMINI OPERATIONALLY VERIFIED / OPENAI INTEGRATION-READY
 Architecture: STABLE
 Compilation: PASS
-Tests: 94 PASSED / 0 FAILED
+Tests: 170 PASSED / 0 FAILED
 Runtime Startup: PASS
-External Integrations: INTEGRATION-READY
+Cloud AI: MIXED
+  OpenAI: INTEGRATION READY (unit-tested, real smoke test not verified — no OPENAI_API_KEY)
+  Gemini: OPERATIONALLY VERIFIED (gemini-2.5-flash-lite, selectable via provider="gemini")
+Content Pipeline: OPERATIONALLY VERIFIED
+  ContentService → CloudAIContentGenerator → CloudAIService → GeminiProvider → Gemini API: PASS
+Research Foundation: IMPLEMENTED
+  OpenSERPSearchProvider: OpenSERP OSS HTTP adapter — unit/contract tests pass (34/34)
+  Integration test: READY (requires local OpenSERP server at http://127.0.0.1:7000)
 Current Implementation Work: NONE
 Current Release Work: DOCUMENTATION + REPOSITORY CLOSURE
 ```

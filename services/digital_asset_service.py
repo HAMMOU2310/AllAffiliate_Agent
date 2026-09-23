@@ -20,6 +20,7 @@ class DigitalAssetService:
         "campaign",
         "social_account",
         "content_asset",
+        "image",
     }
     _SECRET_KEYS = {"secret", "token", "password", "api_key", "apikey"}
 
